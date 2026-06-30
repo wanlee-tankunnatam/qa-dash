@@ -4,6 +4,7 @@ export interface ProjectConfig {
   includePaths: string[]
   warningThresholdDays: number
   warningThresholdCount: number
+  currentSprint?: string
 }
 
 export interface Project {

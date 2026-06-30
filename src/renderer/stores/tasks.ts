@@ -74,5 +74,16 @@ export const useTasksStore = defineStore('tasks', {
         throw e
       }
     },
+
+    async toggleTask(taskId: string, projectId: string, checked: boolean): Promise<void> {
+      const result = this.byProject[projectId]
+      if (!result) return
+      const task =
+        result.untracked.find((t) => t.id === taskId) ??
+        result.linked.find((t) => t.id === taskId)
+      if (!task) return
+      await window.qaApi.toggleTask(task.filePath, task.lineNumber, checked)
+      task.isChecked = checked
+    },
   },
 })

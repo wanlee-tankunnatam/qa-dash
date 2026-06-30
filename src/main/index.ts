@@ -8,6 +8,7 @@ import { JiraClient } from './services/JiraClient.js'
 import { DangerZoneTracker } from './services/DangerZoneTracker.js'
 import { DraftService } from './services/DraftService.js'
 import { Scheduler } from './services/Scheduler.js'
+import { SprintStatusReader } from './services/SprintStatusReader.js'
 import { registerHandlers } from './ipc/handlers.js'
 
 let mainWindow: BrowserWindow | null = null
@@ -20,7 +21,8 @@ app.whenReady().then(async () => {
   const repoScanner = new RepoScanner(ignoreStore)
   const jiraClient = new JiraClient(keychainService)
   const dangerZoneTracker = new DangerZoneTracker(configStore)
-  const draftService = new DraftService(keychainService)
+  const draftService = new DraftService()
+  const sprintStatusReader = new SprintStatusReader()
 
   // 2. สร้าง window
   mainWindow = createWindow()
@@ -44,6 +46,7 @@ app.whenReady().then(async () => {
     ignoreStore,
     keychainService,
     scheduler,
+    sprintStatusReader,
     () => mainWindow!
   )
 

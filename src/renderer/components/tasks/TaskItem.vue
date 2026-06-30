@@ -7,8 +7,8 @@
       class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600"
     />
     <div class="flex-1 min-w-0">
-      <p class="text-sm text-gray-700 break-words">{{ task.rawText }}</p>
-      <p class="text-xs text-gray-400 mt-0.5">{{ task.fileRelativePath }}:{{ task.lineNumber }}</p>
+      <p class="text-sm text-gray-700 break-words">{{ stripMd(task.rawText) }}</p>
+      <p class="text-[10px] text-gray-300 font-mono mt-0.5">{{ task.fileRelativePath }}:{{ task.lineNumber }}</p>
     </div>
     <div class="flex-shrink-0 flex items-center gap-2">
       <button
@@ -30,6 +30,23 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { UntrackedTask } from '@shared/types/task'
+
+function stripMd(text: string): string {
+  const clean = text
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1')
+    .replace(/^\s*#+\s*/, '')
+    .trim()
+  let s = clean.replace(/\s*\(AC[\d,\s:]+\)\s*$/i, '').trim()
+  const dashIdx = s.indexOf(' — ')
+  if (dashIdx > 15) s = s.slice(0, dashIdx)
+  const parenIdx = s.search(/\s\(/)
+  if (parenIdx > 20) s = s.slice(0, parenIdx)
+  return s
+}
 
 interface Props {
   task: UntrackedTask

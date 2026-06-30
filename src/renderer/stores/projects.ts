@@ -24,7 +24,7 @@ export const useProjectsStore = defineStore('projects', {
       this.loading = true
       this.error = null
       try {
-        const projects = await window.qaApi.getProjects()
+        const projects = await window.qaApi.listProjects()
         this.projects = projects
       } catch (e) {
         this.error = (e as Error).message
@@ -66,7 +66,7 @@ export const useProjectsStore = defineStore('projects', {
       this.loading = true
       this.error = null
       try {
-        const updated = await window.qaApi.updateConfig(id, patch)
+        const updated = await window.qaApi.updateProjectConfig(id, patch)
         const idx = this.projects.findIndex((p) => p.id === id)
         if (idx !== -1) {
           this.projects[idx] = { ...this.projects[idx], config: updated }

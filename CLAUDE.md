@@ -177,6 +177,13 @@ Pipeline รัน PA → BA → Dev Lead → Dev → Dev Lead review → QA Lea
 
 ---
 
+## Jira Configuration
+
+Jira project keys บันทึกใน electron-store ผ่าน Settings UI ของแอป (IpcChannel `jira:projects:get`)
+Instance: `kitdi.atlassian.net`
+
+---
+
 ## สถานะปัจจุบัน
 
 Phase 1 — Project Scaffold (กำลัง implement)

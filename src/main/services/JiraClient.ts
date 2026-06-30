@@ -1,6 +1,6 @@
 import type { KeychainService } from './KeychainService.js'
 import type { JiraTicket, JiraStatus, JiraPriority } from '../../shared/types/jira.js'
-import { JIRA_BATCH_SIZE, JIRA_RATE_LIMIT_MS, JIRA_RETRY_DELAY_MS } from '../../shared/constants.js'
+import { JIRA_RETRY_DELAY_MS } from '../../shared/constants.js'
 
 const STATUS_MAP: Record<string, JiraStatus> = {
   'To Do': 'TODO',
@@ -24,48 +24,30 @@ export class JiraClient {
     if (!email) throw new Error('JIRA_AUTH_FAILED')
 
     const authHeader = `Basic ${Buffer.from(`${email}:${token}`).toString('base64')}`
+    const unique = [...new Set(keys)]
 
-    const results: JiraTicket[] = []
-    const batches: string[][] = []
-    for (let i = 0; i < keys.length; i += JIRA_BATCH_SIZE) {
-      batches.push(keys.slice(i, i + JIRA_BATCH_SIZE))
-    }
-
-    for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
-      const batch = batches[batchIdx]
-      if (batchIdx > 0) {
-        await sleep(JIRA_RATE_LIMIT_MS)
-      }
-
-      const tickets = await this.fetchBatch(batch, baseUrl, authHeader)
-      results.push(...tickets)
-    }
-
-    return results
+    const results = await Promise.all(
+      unique.map(key => this.fetchIssue(key, baseUrl, authHeader))
+    )
+    return results.filter((t): t is JiraTicket => t !== null)
   }
 
-  private async fetchBatch(
-    keys: string[],
+  private async fetchIssue(
+    key: string,
     baseUrl: string,
     authHeader: string,
     isRetry = false
-  ): Promise<JiraTicket[]> {
-    const jql = `key in (${keys.join(',')})`
-    const url = `${baseUrl}/rest/api/3/search`
+  ): Promise<JiraTicket | null> {
+    const url = `${baseUrl}/rest/api/3/issue/${key}?fields=summary,status,priority,duedate,updated,assignee,labels`
 
     let response: Response
     try {
       response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: authHeader,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({ jql, fields: ['summary', 'status', 'priority', 'duedate', 'assignee', 'labels'] }),
+        method: 'GET',
+        headers: { Authorization: authHeader, Accept: 'application/json' },
       })
-    } catch (err) {
-      throw err
+    } catch {
+      return null
     }
 
     if (response.status === 401 || response.status === 403) {
@@ -75,29 +57,43 @@ export class JiraClient {
     if (response.status === 429) {
       if (!isRetry) {
         await sleep(JIRA_RETRY_DELAY_MS)
-        return this.fetchBatch(keys, baseUrl, authHeader, true)
+        return this.fetchIssue(key, baseUrl, authHeader, true)
       }
-      throw new Error('JIRA_RATE_LIMITED')
+      return null
     }
 
-    if (!response.ok) {
-      throw new Error(`JIRA_HTTP_ERROR: ${response.status}`)
-    }
+    if (!response.ok) return null
 
-    const data = await response.json() as { issues: JiraIssueRaw[] }
+    const issue = await response.json() as JiraIssueRaw
     const fetchedAt = new Date().toISOString()
-
-    return (data.issues ?? []).map((issue) => ({
-      key: issue.key,
+    return {
+      key,
       summary: issue.fields.summary,
       status: STATUS_MAP[issue.fields.status.name] ?? 'TODO',
       priority: issue.fields.priority?.name as JiraPriority ?? 'Minor',
       dueDate: issue.fields.duedate ?? undefined,
+      updatedDate: issue.fields.updated ? issue.fields.updated.slice(0, 10) : undefined,
       assignee: issue.fields.assignee?.displayName,
       labels: issue.fields.labels ?? [],
-      url: `${baseUrl}/browse/${issue.key}`,
+      url: `${baseUrl}/browse/${key}`,
       fetchedAt,
-    }))
+    }
+  }
+
+  async getActiveSprint(boardId: string, baseUrl: string, email: string): Promise<{ id: number; name: string } | null> {
+    const token = await this.keychainService.getCredential('jira-token')
+    if (!token || !email) return null
+    const authHeader = `Basic ${Buffer.from(`${email}:${token}`).toString('base64')}`
+    try {
+      const res = await fetch(`${baseUrl}/rest/agile/1.0/board/${boardId}/sprint?state=active`, {
+        headers: { Authorization: authHeader, Accept: 'application/json' },
+      })
+      if (!res.ok) return null
+      const data = await res.json() as { values: Array<{ id: number; name: string }> }
+      return data.values?.[0] ?? null
+    } catch {
+      return null
+    }
   }
 
   async testConnection(baseUrl: string, email: string): Promise<boolean> {
@@ -116,12 +112,12 @@ export class JiraClient {
 }
 
 interface JiraIssueRaw {
-  key: string
   fields: {
     summary: string
     status: { name: string }
     priority?: { name: string }
     duedate?: string
+    updated?: string
     assignee?: { displayName: string }
     labels: string[]
   }

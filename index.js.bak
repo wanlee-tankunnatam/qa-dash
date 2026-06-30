@@ -1,0 +1,6 @@
+const fs = require('fs')
+const out = []
+out.push('type: ' + process.type)
+out.push('electron: ' + process.versions.electron)
+fs.writeFileSync('/tmp/process-type.txt', out.join('\n'))
+process.exit(0)

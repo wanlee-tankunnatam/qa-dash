@@ -7,6 +7,7 @@ export interface JiraTicket {
   status: JiraStatus
   priority: JiraPriority
   dueDate?: string
+  updatedDate?: string
   assignee?: string
   labels: string[]
   url: string

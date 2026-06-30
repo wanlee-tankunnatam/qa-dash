@@ -28,11 +28,11 @@ export const useJiraStore = defineStore('jira', {
   },
 
   actions: {
-    async fetchTickets(keys: string[], projectId: string): Promise<void> {
+    async fetchTickets(keys: string[]): Promise<void> {
       this.loading = true
       this.error = null
       try {
-        const tickets = await window.qaApi.getTickets(keys, projectId)
+        const tickets = await window.qaApi.fetchTickets(keys)
         for (const ticket of tickets) {
           this.tickets[ticket.key] = ticket
         }

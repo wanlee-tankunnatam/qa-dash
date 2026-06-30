@@ -21,9 +21,9 @@
         <PriorityBadge v-if="ticket" :priority="ticket.priority" />
       </div>
       <p class="text-sm text-gray-700 mt-1 break-words">
-        {{ ticket?.summary ?? task.rawText }}
+        {{ ticket?.summary ?? stripMd(task.rawText) }}
       </p>
-      <p class="text-xs text-gray-400 mt-0.5">{{ task.fileRelativePath }}:{{ task.lineNumber }}</p>
+      <p class="text-[10px] text-gray-300 font-mono mt-0.5">{{ task.fileRelativePath }}:{{ task.lineNumber }}</p>
     </div>
   </div>
 </template>
@@ -31,6 +31,23 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { LinkedTask } from '@shared/types/task'
+
+function stripMd(text: string): string {
+  const clean = text
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1')
+    .replace(/^\s*#+\s*/, '')
+    .trim()
+  let s = clean.replace(/\s*\(AC[\d,\s:]+\)\s*$/i, '').trim()
+  const dashIdx = s.indexOf(' — ')
+  if (dashIdx > 15) s = s.slice(0, dashIdx)
+  const parenIdx = s.search(/\s\(/)
+  if (parenIdx > 20) s = s.slice(0, parenIdx)
+  return s
+}
 import type { JiraTicket } from '@shared/types/jira'
 import StatusBadge from '@renderer/components/shared/StatusBadge.vue'
 import PriorityBadge from '@renderer/components/shared/PriorityBadge.vue'

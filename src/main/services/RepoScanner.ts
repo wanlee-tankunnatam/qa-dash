@@ -5,7 +5,7 @@ import { resolve, relative } from 'path'
 import type { IgnoreStore } from './IgnoreStore.js'
 import type { Project } from '../../shared/types/project.js'
 import type { ScanResult, UntrackedTask, LinkedTask } from '../../shared/types/task.js'
-import { parseChecklist, extractTicketKey } from '../utils/markdown.js'
+import { parseChecklist, extractTicketKey, extractHeading, extractDueDate, extractSprint } from '../utils/markdown.js'
 
 export class RepoScanner {
   constructor(private ignoreStore: IgnoreStore) {}
@@ -18,11 +18,22 @@ export class RepoScanner {
 
     let files: string[]
     try {
-      files = await glob('**/*.md', {
-        cwd: project.rootPath,
-        ignore: project.config.excludePatterns,
-        absolute: false,
-      })
+      const patterns =
+        project.config.includePaths?.length
+          ? project.config.includePaths.map((p) => (p.endsWith('.md') ? p : `${p.replace(/\/$/, '')}/**/*.md`))
+          : ['_bmad-output/test-artifacts/epic-*/*.md']
+      files = (
+        await Promise.all(
+          patterns.map((pattern) =>
+            glob(pattern, {
+              cwd: project.rootPath,
+              ignore: project.config.excludePatterns,
+              absolute: false,
+            })
+          )
+        )
+      ).flat()
+      files = [...new Set(files)]
     } catch (err) {
       return {
         projectId: project.id,
@@ -45,7 +56,25 @@ export class RepoScanner {
       }
 
       const lines = content.split('\n')
+      let currentEpic: string | undefined
+      let currentSection: string | undefined
       for (let i = 0; i < lines.length; i++) {
+        const heading = extractHeading(lines[i])
+        if (heading) {
+          if (heading.level === 1) {
+            currentEpic = heading.text
+            currentSection = undefined
+          } else if (heading.level === 2) {
+            currentSection = heading.text
+          } else if (heading.level === 3) {
+            // H3 "Story N.M ..." overrides section for story-level grouping
+            if (/Story\s+\d+\.\d+/i.test(heading.text)) {
+              currentSection = heading.text
+            }
+          }
+          continue
+        }
+
         const parsed = parseChecklist(lines[i])
         if (!parsed) continue
 
@@ -55,6 +84,8 @@ export class RepoScanner {
           .digest('hex')
 
         const ticketKey = extractTicketKey(parsed.text, project.config.ticketRegex)
+        const dueDate = extractDueDate(parsed.text) ?? undefined
+        const sprint = extractSprint(parsed.text, relPath) ?? undefined
 
         if (ticketKey) {
           const task: LinkedTask = {
@@ -68,6 +99,10 @@ export class RepoScanner {
             scannedAt,
             type: 'linked',
             jiraKey: ticketKey,
+            epic: currentEpic,
+            section: currentSection,
+            dueDate,
+            sprint,
           }
           linked.push(task)
         } else {
@@ -83,6 +118,10 @@ export class RepoScanner {
             scannedAt,
             type: 'untracked',
             isIgnoredToday,
+            epic: currentEpic,
+            section: currentSection,
+            dueDate,
+            sprint,
           }
           if (isIgnoredToday) {
             task.ignoredAt = new Date().toISOString()

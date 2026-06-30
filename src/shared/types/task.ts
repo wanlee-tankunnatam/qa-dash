@@ -10,6 +10,10 @@ export interface UntrackedTask {
   type: 'untracked'
   isIgnoredToday: boolean
   ignoredAt?: string
+  epic?: string
+  section?: string
+  sprint?: string
+  dueDate?: string
 }
 
 export interface LinkedTask {
@@ -24,6 +28,10 @@ export interface LinkedTask {
   type: 'linked'
   jiraKey: string
   jiraTicket?: import('./jira').JiraTicket
+  epic?: string
+  section?: string
+  sprint?: string
+  dueDate?: string
 }
 
 export type Task = UntrackedTask | LinkedTask
