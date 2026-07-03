@@ -184,7 +184,16 @@
       </table>
     </div>
     <!-- Floating footer input bar -->
-    <div v-if="projects.length" class="border-t border-slate-200 bg-white px-5 py-3 flex items-start gap-2 flex-shrink-0">
+    <div
+      v-if="projects.length"
+      class="relative border-t border-slate-200 bg-white px-5 py-3 flex items-start gap-2 flex-shrink-0"
+      :style="{ height: inputBarHeight + 'px' }"
+    >
+      <!-- Drag handle -->
+      <div
+        class="absolute top-0 left-0 right-0 h-1.5 cursor-ns-resize hover:bg-indigo-100 transition-colors"
+        @mousedown.prevent="startResize"
+      />
       <select
         v-model="inputProjectId"
         class="text-xs border border-slate-200 rounded-lg px-2.5 py-2 text-slate-600 bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 min-w-[120px]"
@@ -205,8 +214,7 @@
       <textarea
         v-model="inputText"
         placeholder="รายละเอียด…"
-        rows="2"
-        class="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none leading-relaxed"
+        class="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none leading-relaxed self-stretch"
         @keydown.enter.exact.prevent="addEntry"
       />
 
@@ -246,6 +254,21 @@ const entries = ref<Record<string, string[]>>({})
 const inputText = ref('')
 const inputProjectId = ref('')
 const inputDay = ref<'today' | 'yesterday'>('today')
+const inputBarHeight = ref(88)
+
+function startResize(e: MouseEvent) {
+  const startY = e.clientY
+  const startH = inputBarHeight.value
+  const onMove = (ev: MouseEvent) => {
+    inputBarHeight.value = Math.max(64, Math.min(400, startH - (ev.clientY - startY)))
+  }
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('mouseup', onUp)
+  }
+  document.addEventListener('mousemove', onMove)
+  document.addEventListener('mouseup', onUp)
+}
 const editingRef = ref<{ projectId: string; date: string; idx: number } | null>(null)
 const dragSrc = ref<{ projectId: string; date: string; idx: number } | null>(null)
 const dragOverKey = ref<string | null>(null)
