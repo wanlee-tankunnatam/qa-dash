@@ -57,6 +57,9 @@
             </div>
             <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
               <button class="text-xs text-slate-400 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50 transition-colors" @click="openForm(c)">แก้ไข</button>
+              <button class="text-xs px-2 py-1 rounded transition-colors" :class="copiedAll === c.id ? 'text-emerald-500 bg-emerald-50' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'" @click="copyAll(c)">
+                {{ copiedAll === c.id ? '✓ copied' : 'copy all' }}
+              </button>
               <button class="text-xs text-slate-400 hover:text-red-500 px-2 py-1 rounded hover:bg-red-50 transition-colors" @click="deleteCred(c.id)">ลบ</button>
             </div>
           </div>
@@ -228,6 +231,7 @@ const credList = ref<ServiceCredential[]>([])
 const form = ref<FormState | null>(null)
 const query = ref('')
 const copied = ref<Record<string, CopiedField>>({})
+const copiedAll = ref<string | null>(null)
 
 async function copyText(id: string, field: CopiedField, text?: string) {
   await navigator.clipboard.writeText(text ?? '')
@@ -245,6 +249,30 @@ async function copyToken(c: ServiceCredential) {
   const token = await window.qaApi.getCredentialToken(c.id)
   if (!token) return
   await copyText(c.id, 'token', token)
+}
+
+async function copyAll(c: ServiceCredential) {
+  const lines: string[] = []
+  lines.push(`service: ${c.service}`)
+  if (c.url) lines.push(`url: ${c.url}`)
+  if (c.email) lines.push(`email: ${c.email}`)
+  lines.push(`user: ${c.username}`)
+  if (c.hasPassword) {
+    const pw = await window.qaApi.getCredentialPassword(c.id)
+    if (pw) lines.push(`pass: ${pw}`)
+  }
+  if (c.hasToken) {
+    const tk = await window.qaApi.getCredentialToken(c.id)
+    if (tk) lines.push(`token: ${tk}`)
+  }
+  if (c.clientId) lines.push(`id: ${c.clientId}`)
+  if (c.hasSecret) {
+    const sc = await window.qaApi.getCredentialSecret(c.id)
+    if (sc) lines.push(`secret: ${sc}`)
+  }
+  await navigator.clipboard.writeText(lines.join('\n'))
+  copiedAll.value = c.id
+  setTimeout(() => { copiedAll.value = null }, 2000)
 }
 
 async function copySecret(c: ServiceCredential) {
