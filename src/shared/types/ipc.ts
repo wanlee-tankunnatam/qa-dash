@@ -37,6 +37,12 @@ export const enum IpcChannel {
   SPRINT_STATUS_GET = 'sprint:status:get',
   JIRA_SPRINT_ACTIVE = 'jira:sprint:active',
   SHELL_OPEN_EXTERNAL = 'shell:open-external',
+  CREDENTIALS_LIST = 'credentials:list',
+  CREDENTIALS_UPSERT = 'credentials:upsert',
+  CREDENTIALS_DELETE = 'credentials:delete',
+  CREDENTIALS_GET_PASSWORD = 'credentials:get-password',
+  CREDENTIALS_GET_TOKEN = 'credentials:get-token',
+  CREDENTIALS_GET_SECRET = 'credentials:get-secret',
 
   // Main → Renderer (webContents.send) — push events
   SYNC_COMPLETED = 'event:sync:completed',

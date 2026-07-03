@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow, dialog, shell } from 'electron'
 import { IpcChannel } from '../../shared/types/ipc.js'
-import type { ConfigStore, JiraProject } from '../services/ConfigStore.js'
+import type { ConfigStore, JiraProject, ServiceCredential } from '../services/ConfigStore.js'
 import type { RepoScanner } from '../services/RepoScanner.js'
 import type { JiraClient } from '../services/JiraClient.js'
 import type { DangerZoneTracker } from '../services/DangerZoneTracker.js'
@@ -220,6 +220,36 @@ export function registerHandlers(
 
   ipcMain.handle(IpcChannel.SHELL_OPEN_EXTERNAL as string, async (_, url: string) => {
     await shell.openExternal(url)
+  })
+
+  ipcMain.handle(IpcChannel.CREDENTIALS_LIST as string, () => {
+    return configStore.getServiceCredentials()
+  })
+
+  ipcMain.handle(IpcChannel.CREDENTIALS_UPSERT as string, async (_, entry: ServiceCredential, password: string, token: string, secret: string) => {
+    configStore.upsertServiceCredential(entry)
+    if (password) await keychainService.setServicePassword(entry.id, password)
+    if (token) await keychainService.setServiceToken(entry.id, token)
+    if (secret) await keychainService.setServiceSecret(entry.id, secret)
+  })
+
+  ipcMain.handle(IpcChannel.CREDENTIALS_DELETE as string, async (_, id: string) => {
+    configStore.deleteServiceCredential(id)
+    await keychainService.deleteServicePassword(id)
+    await keychainService.deleteServiceToken(id)
+    await keychainService.deleteServiceSecret(id)
+  })
+
+  ipcMain.handle(IpcChannel.CREDENTIALS_GET_PASSWORD as string, async (_, id: string) => {
+    return keychainService.getServicePassword(id)
+  })
+
+  ipcMain.handle(IpcChannel.CREDENTIALS_GET_TOKEN as string, async (_, id: string) => {
+    return keychainService.getServiceToken(id)
+  })
+
+  ipcMain.handle(IpcChannel.CREDENTIALS_GET_SECRET as string, async (_, id: string) => {
+    return keychainService.getServiceSecret(id)
   })
 
   ipcMain.handle(IpcChannel.DIALOG_OPEN_FOLDER as string, async () => {

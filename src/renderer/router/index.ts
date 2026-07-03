@@ -51,6 +51,11 @@ const routes = [
     component: () => import('@renderer/pages/SprintPage.vue'),
   },
   {
+    path: '/credentials',
+    name: 'credentials',
+    component: () => import('@renderer/pages/CredentialsPage.vue'),
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('@renderer/pages/SettingsPage.vue'),

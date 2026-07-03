@@ -54,6 +54,27 @@ class KeychainService {
       throw new Error("KEYCHAIN_ERROR: " + err.message);
     }
   }
+  async setServicePassword(id, password) {
+    try {
+      await keytar.setPassword(this.SERVICE, `svc:${id}`, password);
+    } catch (err) {
+      throw new Error("KEYCHAIN_ERROR: " + err.message);
+    }
+  }
+  async getServicePassword(id) {
+    try {
+      return await keytar.getPassword(this.SERVICE, `svc:${id}`);
+    } catch (err) {
+      throw new Error("KEYCHAIN_ERROR: " + err.message);
+    }
+  }
+  async deleteServicePassword(id) {
+    try {
+      await keytar.deletePassword(this.SERVICE, `svc:${id}`);
+    } catch (err) {
+      throw new Error("KEYCHAIN_ERROR: " + err.message);
+    }
+  }
 }
 const DEFAULT_PROJECT_CONFIG = {
   ticketRegex: "[A-Z]+-\\d+",
@@ -143,6 +164,20 @@ class ConfigStore {
   }
   setJiraProjects(projects) {
     this.store.set("jira.projects", projects);
+  }
+  getServiceCredentials() {
+    return this.store.get("credentials") ?? [];
+  }
+  upsertServiceCredential(entry) {
+    const list = this.getServiceCredentials();
+    const idx = list.findIndex((c) => c.id === entry.id);
+    if (idx >= 0) list[idx] = entry;
+    else list.push(entry);
+    this.store.set("credentials", list);
+  }
+  deleteServiceCredential(id) {
+    const list = this.getServiceCredentials().filter((c) => c.id !== id);
+    this.store.set("credentials", list);
   }
 }
 class IgnoreStore {
@@ -580,6 +615,10 @@ var IpcChannel = /* @__PURE__ */ ((IpcChannel2) => {
   IpcChannel2["SPRINT_STATUS_GET"] = "sprint:status:get";
   IpcChannel2["JIRA_SPRINT_ACTIVE"] = "jira:sprint:active";
   IpcChannel2["SHELL_OPEN_EXTERNAL"] = "shell:open-external";
+  IpcChannel2["CREDENTIALS_LIST"] = "credentials:list";
+  IpcChannel2["CREDENTIALS_UPSERT"] = "credentials:upsert";
+  IpcChannel2["CREDENTIALS_DELETE"] = "credentials:delete";
+  IpcChannel2["CREDENTIALS_GET_PASSWORD"] = "credentials:get-password";
   IpcChannel2["SYNC_COMPLETED"] = "event:sync:completed";
   IpcChannel2["DANGER_ZONE_TRIGGERED"] = "event:dangerzone:triggered";
   IpcChannel2["STREAM_CHUNK"] = "event:stream:chunk";
@@ -1301,6 +1340,20 @@ function registerHandlers(configStore, repoScanner, jiraClient, dangerZoneTracke
   });
   ipcMain.handle(IpcChannel.SHELL_OPEN_EXTERNAL, async (_, url) => {
     await shell.openExternal(url);
+  });
+  ipcMain.handle(IpcChannel.CREDENTIALS_LIST, () => {
+    return configStore.getServiceCredentials();
+  });
+  ipcMain.handle(IpcChannel.CREDENTIALS_UPSERT, async (_, entry, password) => {
+    configStore.upsertServiceCredential(entry);
+    if (password) await keychainService.setServicePassword(entry.id, password);
+  });
+  ipcMain.handle(IpcChannel.CREDENTIALS_DELETE, async (_, id) => {
+    configStore.deleteServiceCredential(id);
+    await keychainService.deleteServicePassword(id);
+  });
+  ipcMain.handle(IpcChannel.CREDENTIALS_GET_PASSWORD, async (_, id) => {
+    return keychainService.getServicePassword(id);
   });
   ipcMain.handle(IpcChannel.DIALOG_OPEN_FOLDER, async () => {
     const win = getWindow();

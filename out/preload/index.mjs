@@ -33,6 +33,10 @@ var IpcChannel = /* @__PURE__ */ ((IpcChannel2) => {
   IpcChannel2["SPRINT_STATUS_GET"] = "sprint:status:get";
   IpcChannel2["JIRA_SPRINT_ACTIVE"] = "jira:sprint:active";
   IpcChannel2["SHELL_OPEN_EXTERNAL"] = "shell:open-external";
+  IpcChannel2["CREDENTIALS_LIST"] = "credentials:list";
+  IpcChannel2["CREDENTIALS_UPSERT"] = "credentials:upsert";
+  IpcChannel2["CREDENTIALS_DELETE"] = "credentials:delete";
+  IpcChannel2["CREDENTIALS_GET_PASSWORD"] = "credentials:get-password";
   IpcChannel2["SYNC_COMPLETED"] = "event:sync:completed";
   IpcChannel2["DANGER_ZONE_TRIGGERED"] = "event:dangerzone:triggered";
   IpcChannel2["STREAM_CHUNK"] = "event:stream:chunk";
@@ -83,6 +87,11 @@ const qaApi = {
   // Notes (daily freeform notes per date)
   getNote: (date) => ipcRenderer.invoke(IpcChannel.NOTES_GET, date),
   setNote: (date, text) => ipcRenderer.invoke(IpcChannel.NOTES_SET, date, text),
+  // Credentials vault
+  listCredentials: () => ipcRenderer.invoke(IpcChannel.CREDENTIALS_LIST),
+  upsertCredential: (entry, password) => ipcRenderer.invoke(IpcChannel.CREDENTIALS_UPSERT, entry, password),
+  deleteCredential2: (id) => ipcRenderer.invoke(IpcChannel.CREDENTIALS_DELETE, id),
+  getCredentialPassword: (id) => ipcRenderer.invoke(IpcChannel.CREDENTIALS_GET_PASSWORD, id),
   // Shell
   openExternal: (url) => ipcRenderer.invoke(IpcChannel.SHELL_OPEN_EXTERNAL, url),
   // Dialog

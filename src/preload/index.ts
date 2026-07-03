@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IpcChannel } from '../shared/types/ipc.js'
 import type { Project, ProjectConfig } from '../shared/types/project.js'
-import type { JiraProject } from '../main/services/ConfigStore.js'
+import type { JiraProject, ServiceCredential } from '../main/services/ConfigStore.js'
 import type { ScanResult } from '../shared/types/task.js'
 import type { JiraTicket } from '../shared/types/jira.js'
 import type { DangerZoneState } from '../shared/types/snapshot.js'
@@ -113,6 +113,25 @@ const qaApi = {
 
   setNote: (date: string, text: string): Promise<void> =>
     ipcRenderer.invoke(IpcChannel.NOTES_SET as string, date, text),
+
+  // Credentials vault
+  listCredentials: (): Promise<ServiceCredential[]> =>
+    ipcRenderer.invoke(IpcChannel.CREDENTIALS_LIST as string),
+
+  upsertCredential: (entry: ServiceCredential, password: string, token: string, secret: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.CREDENTIALS_UPSERT as string, entry, password, token, secret),
+
+  deleteCredential2: (id: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.CREDENTIALS_DELETE as string, id),
+
+  getCredentialPassword: (id: string): Promise<string | null> =>
+    ipcRenderer.invoke(IpcChannel.CREDENTIALS_GET_PASSWORD as string, id),
+
+  getCredentialToken: (id: string): Promise<string | null> =>
+    ipcRenderer.invoke(IpcChannel.CREDENTIALS_GET_TOKEN as string, id),
+
+  getCredentialSecret: (id: string): Promise<string | null> =>
+    ipcRenderer.invoke(IpcChannel.CREDENTIALS_GET_SECRET as string, id),
 
   // Shell
   openExternal: (url: string): Promise<void> =>

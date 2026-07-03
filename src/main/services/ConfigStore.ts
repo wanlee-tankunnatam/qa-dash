@@ -20,6 +20,18 @@ export interface JiraProject {
   name: string
 }
 
+export interface ServiceCredential {
+  id: string
+  service: string
+  url?: string
+  username: string
+  email?: string
+  clientId?: string
+  hasPassword?: boolean
+  hasToken?: boolean
+  hasSecret?: boolean
+}
+
 interface StoreSchema {
   projects: Project[]
   [key: string]: unknown
@@ -120,5 +132,22 @@ export class ConfigStore {
 
   setJiraProjects(projects: JiraProject[]): void {
     this.store.set('jira.projects', projects)
+  }
+
+  getServiceCredentials(): ServiceCredential[] {
+    return (this.store.get('credentials') as ServiceCredential[] | undefined) ?? []
+  }
+
+  upsertServiceCredential(entry: ServiceCredential): void {
+    const list = this.getServiceCredentials()
+    const idx = list.findIndex(c => c.id === entry.id)
+    if (idx >= 0) list[idx] = entry
+    else list.push(entry)
+    this.store.set('credentials', list)
+  }
+
+  deleteServiceCredential(id: string): void {
+    const list = this.getServiceCredentials().filter(c => c.id !== id)
+    this.store.set('credentials', list)
   }
 }

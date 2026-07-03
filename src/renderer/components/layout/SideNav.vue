@@ -99,11 +99,17 @@ const IconToday = () =>
     h('path', { d: 'M4 .5a.5.5 0 0 0-1 0V1H1.5A1.5 1.5 0 0 0 0 2.5v11A1.5 1.5 0 0 0 1.5 15h13a1.5 1.5 0 0 0 1.5-1.5v-11A1.5 1.5 0 0 0 14.5 1H13V.5a.5.5 0 0 0-1 0V1H4V.5ZM1 5h14v8.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V5Zm6 2h2v2H7V7Z' }),
   ])
 
+const IconKey = () =>
+  h('svg', { viewBox: '0 0 16 16', fill: 'currentColor', 'aria-hidden': 'true' }, [
+    h('path', { 'fill-rule': 'evenodd', d: 'M11.5 1a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM5.5 5.5a6 6 0 1 1 11 2.11l2.7 2.7a.75.75 0 0 1-1.06 1.06L15.44 9.67A6 6 0 0 1 5.5 5.5Zm3.25 5.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5H10v1.25a.75.75 0 0 1-1.5 0V11a.75.75 0 0 1 .75-.75v.5Z', 'clip-rule': 'evenodd' }),
+  ])
+
 const navItems = [
   { to: '/', label: 'Home', icon: IconHome },
   { to: '/qa', label: 'Tasks', icon: IconDashboard },
   { to: '/sprint', label: 'Sprint', icon: IconSprint },
   { to: '/ai', label: 'AI Terminal', icon: IconAI },
+  { to: '/credentials', label: 'Credentials', icon: IconKey },
   { to: '/settings', label: 'Settings', icon: IconSettings },
 ]
 </script>
