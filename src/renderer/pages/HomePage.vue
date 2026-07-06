@@ -7,14 +7,40 @@
         <p class="text-xs text-slate-400 mt-0.5">{{ todayLabel }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Date picker -->
-        <input
-          type="date"
-          :value="anchorStr"
-          :max="dateStr(0)"
-          class="text-xs border border-slate-200 rounded-md px-2.5 py-1.5 text-slate-600 bg-white focus:outline-none focus:ring-1 focus:ring-slate-300"
-          @change="onDateChange"
-        />
+        <!-- Date nav -->
+        <div class="flex items-center rounded-md border border-slate-200 overflow-hidden">
+          <button
+            class="px-2.5 py-1.5 text-slate-500 hover:bg-slate-50 text-sm leading-none transition-colors"
+            @click="navigate(-1)"
+          >‹</button>
+          <input
+            type="date"
+            :value="anchorStr"
+            :max="dateStr(0)"
+            class="text-xs border-l border-r border-slate-200 px-2.5 py-1.5 text-slate-600 bg-white focus:outline-none"
+            @change="onDateChange"
+          />
+          <button
+            class="px-2.5 py-1.5 text-sm leading-none transition-colors"
+            :class="offsetDays >= 0 ? 'text-slate-200 cursor-not-allowed' : 'text-slate-500 hover:bg-slate-50'"
+            :disabled="offsetDays >= 0"
+            @click="navigate(1)"
+          >›</button>
+        </div>
+        <!-- view mode toggle -->
+        <div class="flex rounded-md border border-slate-200 overflow-hidden text-xs font-medium">
+          <button
+            class="px-3 py-1.5 transition-colors"
+            :class="viewMode === 'daily' ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'"
+            @click="setViewMode('daily')"
+          >Daily</button>
+          <button
+            class="px-3 py-1.5 border-l border-slate-200 transition-colors"
+            :class="viewMode === 'week' ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'"
+            @click="setViewMode('week')"
+          >Week</button>
+        </div>
+
         <button
           class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border transition-all"
           :class="isSyncing
@@ -43,91 +69,66 @@
 
     <!-- Main table — projects เป็นแถว, วันเป็นคอลัมน์ -->
     <div v-else class="flex-1 overflow-auto p-5">
-      <table class="w-full text-xs border-collapse border border-slate-200 rounded-lg overflow-hidden">
+      <table class="w-full table-fixed text-xs border-collapse border border-slate-200 rounded-lg overflow-hidden">
         <thead>
           <tr class="border-b border-slate-200 sticky top-0 z-10 bg-white">
-            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 w-36 border-r border-slate-200">โปรเจกต์</th>
-            <!-- เมื่อวาน -->
-            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 border-r border-slate-200 w-[42%]">
-              <span class="uppercase tracking-wider">เมื่อวาน</span>
-              <p class="text-[10px] font-mono font-normal mt-0.5">{{ prevStr }}</p>
-            </th>
-            <!-- วันนี้ -->
-            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-700 w-[42%]">
-              <span class="uppercase tracking-wider">วันนี้</span>
-              <p class="text-[10px] font-mono font-normal mt-0.5">{{ anchorStr }}</p>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 w-28 border-r border-slate-200">โปรเจกต์</th>
+            <th
+              v-for="(date, idx) in visibleDates" :key="date"
+              class="text-left px-3 py-3 text-xs font-semibold border-r border-slate-200 last:border-r-0"
+              :class="(viewMode === 'daily' ? idx === visibleDates.length - 1 : date === anchorStr) ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500'"
+            >
+              <span class="uppercase tracking-wider">{{
+                viewMode === 'daily'
+                  ? (idx === visibleDates.length - 1 ? 'วันนี้' : 'เมื่อวาน')
+                  : dayLabel(date)
+              }}</span>
+              <p class="text-[10px] font-mono font-normal mt-0.5">{{ date }}</p>
             </th>
           </tr>
         </thead>
         <tbody>
           <!-- แถว project -->
-          <tr
-            v-for="p in projects" :key="p.id"
-            class="border-b border-slate-200 align-top h-32"
-          >
-            <!-- ชื่อ project -->
+          <tr v-for="p in projects" :key="p.id" class="border-b border-slate-200 align-top">
             <td class="px-4 py-3 border-r border-slate-200 align-top">
               <div class="flex items-center gap-1.5">
                 <span class="font-semibold text-slate-700">{{ p.name }}</span>
                 <span v-if="tasksStore.scanning[p.id]" class="w-1.5 h-1.5 rounded-full bg-slate-300 animate-pulse" />
               </div>
             </td>
-            <!-- เมื่อวาน tasks + entries -->
-            <td class="px-4 py-3 border-r border-slate-200 align-top">
+            <td
+              v-for="date in visibleDates" :key="date"
+              class="px-3 py-3 border-r border-slate-200 last:border-r-0 align-top min-h-[6rem]"
+              :class="(viewMode === 'daily' ? date === visibleDates[visibleDates.length - 1] : date === anchorStr) ? 'bg-indigo-50/30' : ''"
+            >
               <div class="space-y-1.5">
-                <div v-for="task in yesterdayTasks(p.id)" :key="task.id" class="flex items-start gap-1.5">
+                <div v-for="task in tasksOnDate(p.id, date)" :key="task.id" class="flex items-start gap-1.5">
                   <svg class="w-3 h-3 text-slate-300 flex-shrink-0 mt-px" viewBox="0 0 12 12" fill="currentColor">
                     <path v-if="task.isChecked" d="M10.28 3.28 4.5 9.06 1.72 6.28a.75.75 0 0 0-1.06 1.06l3.34 3.34a.75.75 0 0 0 1.06 0l6.28-6.34a.75.75 0 0 0-1.06-1.06Z"/>
                     <circle v-else cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
                   </svg>
                   <span class="leading-relaxed" :class="task.isChecked ? 'line-through text-slate-300' : 'text-slate-600'">{{ strip(task.rawText) }}</span>
                 </div>
-                <div v-for="(e, i) in getEntries(p.id, prevStr)" :key="'fe-'+i" class="flex items-start gap-1.5 group cursor-grab active:cursor-grabbing select-none rounded transition-colors"
-                  :class="dragOverKey === `${p.id}:${prevStr}:${i}` ? 'bg-slate-100' : ''"
+                <div
+                  v-for="(e, i) in getEntries(p.id, date)" :key="'fe-'+i"
+                  class="flex items-start gap-1.5 group cursor-grab active:cursor-grabbing select-none rounded transition-colors"
+                  :class="dragOverKey === `${p.id}:${date}:${i}` ? 'bg-slate-100' : ''"
                   draggable="true"
-                  @dragstart="onDragStart(p.id, prevStr, i)"
-                  @dragover="onDragOver($event, p.id, prevStr, i)"
-                  @drop="onDrop(p.id, prevStr, i)"
-                  @dragend="dragSrc = null; dragOverKey = null">
+                  @dragstart="onDragStart(p.id, date, i)"
+                  @dragover="onDragOver($event, p.id, date, i)"
+                  @drop="onDrop(p.id, date, i)"
+                  @dragend="dragSrc = null; dragOverKey = null"
+                >
                   <span class="text-slate-500 text-base mt-0.5 flex-shrink-0 cursor-grab leading-none">⠿</span>
-                  <span class="leading-relaxed text-slate-600 flex-1 whitespace-pre-wrap" :class="editingRef?.projectId === p.id && editingRef?.date === prevStr && editingRef?.idx === i ? 'text-slate-300' : ''">{{ e }}</span>
-                  <button class="text-slate-500 hover:text-slate-800 text-[10px] flex-shrink-0 px-1 transition-colors" title="แก้ไข" @click.stop="startEdit(p.id, prevStr, i, e)">✎</button>
-                  <span v-if="confirmDelete?.projectId === p.id && confirmDelete?.date === prevStr && confirmDelete?.idx === i" class="flex items-center gap-1 flex-shrink-0">
-                    <button class="text-[10px] text-white bg-red-500 hover:bg-red-600 rounded px-1.5 py-0.5 transition-colors" @click.stop="removeEntry(p.id, prevStr, i); confirmDelete = null">ลบ</button>
+                  <span class="leading-relaxed text-slate-600 flex-1 whitespace-pre-wrap" :class="editingRef?.projectId === p.id && editingRef?.date === date && editingRef?.idx === i ? 'text-slate-300' : ''">{{ e }}</span>
+                  <button class="text-slate-500 hover:text-slate-800 text-[10px] flex-shrink-0 px-1 transition-colors" @click.stop="startEdit(p.id, date, i, e)">✎</button>
+                  <span v-if="confirmDelete?.projectId === p.id && confirmDelete?.date === date && confirmDelete?.idx === i" class="flex items-center gap-1 flex-shrink-0">
+                    <button class="text-[10px] text-white bg-red-500 hover:bg-red-600 rounded px-1.5 py-0.5 transition-colors" @click.stop="removeEntry(p.id, date, i); confirmDelete = null">ลบ</button>
                     <button class="text-[10px] text-slate-500 hover:text-slate-700 transition-colors" @click.stop="confirmDelete = null">ยกเลิก</button>
                   </span>
-                  <button v-else class="text-slate-500 hover:text-red-500 text-[10px] flex-shrink-0 transition-colors" @click.stop="confirmDelete = { projectId: p.id, date: prevStr, idx: i }">✕</button>
+                  <button v-else class="text-slate-500 hover:text-red-500 text-[10px] flex-shrink-0 transition-colors" @click.stop="confirmDelete = { projectId: p.id, date, idx: i }">✕</button>
                 </div>
-                <span v-if="!yesterdayTasks(p.id).length && !getEntries(p.id, prevStr).length" class="text-slate-200">—</span>
-              </div>
-            </td>
-            <!-- วันนี้ tasks + entries -->
-            <td class="px-4 py-3 align-top">
-              <div class="space-y-1.5">
-                <div v-for="task in todayTasks(p.id)" :key="task.id" class="flex items-start gap-1.5">
-                  <svg class="w-3 h-3 text-slate-300 flex-shrink-0 mt-px" viewBox="0 0 12 12" fill="currentColor">
-                    <path v-if="task.isChecked" d="M10.28 3.28 4.5 9.06 1.72 6.28a.75.75 0 0 0-1.06 1.06l3.34 3.34a.75.75 0 0 0 1.06 0l6.28-6.34a.75.75 0 0 0-1.06-1.06Z"/>
-                    <circle v-else cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                  </svg>
-                  <span class="leading-relaxed" :class="task.isChecked ? 'line-through text-slate-300' : 'text-slate-700'">{{ strip(task.rawText) }}</span>
-                </div>
-                <div v-for="(e, i) in getEntries(p.id, anchorStr)" :key="'fe-'+i" class="flex items-start gap-1.5 group cursor-grab active:cursor-grabbing select-none rounded transition-colors"
-                  :class="dragOverKey === `${p.id}:${anchorStr}:${i}` ? 'bg-slate-100' : ''"
-                  draggable="true"
-                  @dragstart="onDragStart(p.id, anchorStr, i)"
-                  @dragover="onDragOver($event, p.id, anchorStr, i)"
-                  @drop="onDrop(p.id, anchorStr, i)"
-                  @dragend="dragSrc = null; dragOverKey = null">
-                  <span class="text-slate-500 text-base mt-0.5 flex-shrink-0 cursor-grab leading-none">⠿</span>
-                  <span class="leading-relaxed text-slate-700 flex-1 whitespace-pre-wrap" :class="editingRef?.projectId === p.id && editingRef?.date === anchorStr && editingRef?.idx === i ? 'text-slate-300' : ''">{{ e }}</span>
-                  <button class="text-slate-500 hover:text-slate-800 text-[10px] flex-shrink-0 px-1 transition-colors" title="แก้ไข" @click.stop="startEdit(p.id, anchorStr, i, e)">✎</button>
-                  <span v-if="confirmDelete?.projectId === p.id && confirmDelete?.date === anchorStr && confirmDelete?.idx === i" class="flex items-center gap-1 flex-shrink-0">
-                    <button class="text-[10px] text-white bg-red-500 hover:bg-red-600 rounded px-1.5 py-0.5 transition-colors" @click.stop="removeEntry(p.id, anchorStr, i); confirmDelete = null">ลบ</button>
-                    <button class="text-[10px] text-slate-500 hover:text-slate-700 transition-colors" @click.stop="confirmDelete = null">ยกเลิก</button>
-                  </span>
-                  <button v-else class="text-slate-500 hover:text-red-500 text-[10px] flex-shrink-0 transition-colors" @click.stop="confirmDelete = { projectId: p.id, date: anchorStr, idx: i }">✕</button>
-                </div>
-                <span v-if="!todayTasks(p.id).length && !getEntries(p.id, anchorStr).length" class="text-slate-200">—</span>
+                <span v-if="!tasksOnDate(p.id, date).length && !getEntries(p.id, date).length" class="text-slate-200">—</span>
               </div>
             </td>
           </tr>
@@ -137,46 +138,32 @@
             <td class="px-4 py-3 border-r border-slate-200 align-top">
               <span class="font-semibold text-slate-500">บันทึก</span>
             </td>
-            <td class="px-4 py-3 border-r border-slate-200 align-top">
+            <td
+              v-for="date in visibleDates" :key="date"
+              class="px-3 py-3 border-r border-slate-200 last:border-r-0 align-top"
+              :class="(viewMode === 'daily' ? date === visibleDates[visibleDates.length - 1] : date === anchorStr) ? 'bg-indigo-50/30' : ''"
+            >
               <div class="space-y-2">
-                <div v-for="(e, i) in getEntries('__note__', prevStr)" :key="'n-'+i" class="flex items-start gap-1.5 group cursor-grab active:cursor-grabbing select-none rounded transition-colors"
-                  :class="dragOverKey === `__note__:${prevStr}:${i}` ? 'bg-slate-100' : ''"
+                <div
+                  v-for="(e, i) in getEntries('__note__', date)" :key="'n-'+i"
+                  class="flex items-start gap-1.5 group cursor-grab active:cursor-grabbing select-none rounded transition-colors"
+                  :class="dragOverKey === `__note__:${date}:${i}` ? 'bg-slate-100' : ''"
                   draggable="true"
-                  @dragstart="onDragStart('__note__', prevStr, i)"
-                  @dragover="onDragOver($event, '__note__', prevStr, i)"
-                  @drop="onDrop('__note__', prevStr, i)"
-                  @dragend="dragSrc = null; dragOverKey = null">
+                  @dragstart="onDragStart('__note__', date, i)"
+                  @dragover="onDragOver($event, '__note__', date, i)"
+                  @drop="onDrop('__note__', date, i)"
+                  @dragend="dragSrc = null; dragOverKey = null"
+                >
                   <span class="text-slate-500 text-base mt-0.5 flex-shrink-0 cursor-grab leading-none">⠿</span>
-                  <span class="leading-relaxed text-slate-600 flex-1 whitespace-pre-wrap" :class="editingRef?.projectId === '__note__' && editingRef?.date === prevStr && editingRef?.idx === i ? 'text-slate-300' : ''">{{ e }}</span>
-                  <button class="text-slate-500 hover:text-slate-800 text-[10px] flex-shrink-0 px-1 transition-colors" title="แก้ไข" @click.stop="startEdit('__note__', prevStr, i, e)">✎</button>
-                  <span v-if="confirmDelete?.projectId === '__note__' && confirmDelete?.date === prevStr && confirmDelete?.idx === i" class="flex items-center gap-1 flex-shrink-0">
-                    <button class="text-[10px] text-white bg-red-500 hover:bg-red-600 rounded px-1.5 py-0.5 transition-colors" @click.stop="removeEntry('__note__', prevStr, i); confirmDelete = null">ลบ</button>
+                  <span class="leading-relaxed text-slate-600 flex-1 whitespace-pre-wrap" :class="editingRef?.projectId === '__note__' && editingRef?.date === date && editingRef?.idx === i ? 'text-slate-300' : ''">{{ e }}</span>
+                  <button class="text-slate-500 hover:text-slate-800 text-[10px] flex-shrink-0 px-1 transition-colors" @click.stop="startEdit('__note__', date, i, e)">✎</button>
+                  <span v-if="confirmDelete?.projectId === '__note__' && confirmDelete?.date === date && confirmDelete?.idx === i" class="flex items-center gap-1 flex-shrink-0">
+                    <button class="text-[10px] text-white bg-red-500 hover:bg-red-600 rounded px-1.5 py-0.5 transition-colors" @click.stop="removeEntry('__note__', date, i); confirmDelete = null">ลบ</button>
                     <button class="text-[10px] text-slate-500 hover:text-slate-700 transition-colors" @click.stop="confirmDelete = null">ยกเลิก</button>
                   </span>
-                  <button v-else class="text-slate-500 hover:text-red-500 text-[10px] flex-shrink-0 transition-colors" @click.stop="confirmDelete = { projectId: '__note__', date: prevStr, idx: i }">✕</button>
+                  <button v-else class="text-slate-500 hover:text-red-500 text-[10px] flex-shrink-0 transition-colors" @click.stop="confirmDelete = { projectId: '__note__', date, idx: i }">✕</button>
                 </div>
-                <span v-if="!notes[prevStr] && !getEntries('__note__', prevStr).length" class="text-slate-200">—</span>
-              </div>
-            </td>
-            <td class="px-4 py-3 align-top">
-              <div class="space-y-2">
-                <div v-for="(e, i) in getEntries('__note__', anchorStr)" :key="'n-'+i" class="flex items-start gap-1.5 group cursor-grab active:cursor-grabbing select-none rounded transition-colors"
-                  :class="dragOverKey === `__note__:${anchorStr}:${i}` ? 'bg-slate-100' : ''"
-                  draggable="true"
-                  @dragstart="onDragStart('__note__', anchorStr, i)"
-                  @dragover="onDragOver($event, '__note__', anchorStr, i)"
-                  @drop="onDrop('__note__', anchorStr, i)"
-                  @dragend="dragSrc = null; dragOverKey = null">
-                  <span class="text-slate-500 text-base mt-0.5 flex-shrink-0 cursor-grab leading-none">⠿</span>
-                  <span class="leading-relaxed text-slate-700 flex-1 whitespace-pre-wrap" :class="editingRef?.projectId === '__note__' && editingRef?.date === anchorStr && editingRef?.idx === i ? 'text-slate-300' : ''">{{ e }}</span>
-                  <button class="text-slate-500 hover:text-slate-800 text-[10px] flex-shrink-0 px-1 transition-colors" title="แก้ไข" @click.stop="startEdit('__note__', anchorStr, i, e)">✎</button>
-                  <span v-if="confirmDelete?.projectId === '__note__' && confirmDelete?.date === anchorStr && confirmDelete?.idx === i" class="flex items-center gap-1 flex-shrink-0">
-                    <button class="text-[10px] text-white bg-red-500 hover:bg-red-600 rounded px-1.5 py-0.5 transition-colors" @click.stop="removeEntry('__note__', anchorStr, i); confirmDelete = null">ลบ</button>
-                    <button class="text-[10px] text-slate-500 hover:text-slate-700 transition-colors" @click.stop="confirmDelete = null">ยกเลิก</button>
-                  </span>
-                  <button v-else class="text-slate-500 hover:text-red-500 text-[10px] flex-shrink-0 transition-colors" @click.stop="confirmDelete = { projectId: '__note__', date: anchorStr, idx: i }">✕</button>
-                </div>
-                <span v-if="!notes[anchorStr] && !getEntries('__note__', anchorStr).length" class="text-slate-200">—</span>
+                <span v-if="!getEntries('__note__', date).length" class="text-slate-200">—</span>
               </div>
             </td>
           </tr>
@@ -203,13 +190,11 @@
         <option value="__note__">บันทึก</option>
       </select>
 
-      <select
-        v-model="inputDay"
-        class="text-xs border border-slate-200 rounded-lg px-2.5 py-2 text-slate-600 bg-white focus:outline-none focus:ring-1 focus:ring-slate-300"
-      >
-        <option value="today">วันนี้</option>
-        <option value="yesterday">เมื่อวาน</option>
-      </select>
+      <input
+        type="date"
+        v-model="inputDate"
+        class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-600 bg-white focus:outline-none focus:ring-1 focus:ring-slate-300"
+      />
 
       <textarea
         v-model="inputText"
@@ -250,10 +235,11 @@ const notes = ref<Record<string, string>>({})
 const offsetDays = ref(0) // 0 = today, -1 = yesterday relative, etc.
 
 // freeform entries: key = `${projectId}:${date}`, value = string[]
+const viewMode = ref<'daily' | 'week'>('daily')
 const entries = ref<Record<string, string[]>>({})
 const inputText = ref('')
 const inputProjectId = ref('')
-const inputDay = ref<'today' | 'yesterday'>('today')
+const inputDate = ref(dateStr(0))
 const inputBarHeight = ref(88)
 
 function startResize(e: MouseEvent) {
@@ -274,14 +260,54 @@ const dragSrc = ref<{ projectId: string; date: string; idx: number } | null>(nul
 const dragOverKey = ref<string | null>(null)
 const confirmDelete = ref<{ projectId: string; date: string; idx: number } | null>(null)
 
+// ใช้ local date string (YYYY-MM-DD) แทน toISOString() ที่ให้ UTC
+function localYMD(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 function dateStr(daysFromToday: number): string {
   const d = new Date()
   d.setDate(d.getDate() + daysFromToday)
-  return d.toISOString().slice(0, 10)
+  return localYMD(d)
 }
 
-const anchorStr = computed(() => dateStr(offsetDays.value))       // "วันนี้" anchor
-const prevStr = computed(() => dateStr(offsetDays.value - 1))     // "เมื่อวาน" anchor
+const anchorStr = computed(() => dateStr(offsetDays.value))
+const prevStr = computed(() => dateStr(offsetDays.value - 1))
+
+const DAY_NAMES = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
+function dayLabel(date: string): string {
+  return DAY_NAMES[new Date(date + 'T00:00:00').getDay()]
+}
+
+function rollingWorkdays(anchor: string, n: number): string[] {
+  const result: string[] = []
+  const d = new Date(anchor + 'T00:00:00')
+  while (result.length < n) {
+    if (d.getDay() !== 0 && d.getDay() !== 6) result.unshift(localYMD(d))
+    d.setDate(d.getDate() - 1)
+  }
+  return result
+}
+
+const visibleDates = computed(() => {
+  if (viewMode.value !== 'week') return rollingWorkdays(anchorStr.value, 2)
+
+  // Mon–Fri ของสัปดาห์ที่มี anchor
+  const anchor = new Date(anchorStr.value + 'T00:00:00')
+  const day = anchor.getDay()
+  const monday = new Date(anchor)
+  if (day === 0) monday.setDate(anchor.getDate() + 1)       // อา → จ ถัดไป
+  else if (day === 6) monday.setDate(anchor.getDate() + 2)  // ส → จ ถัดไป
+  else monday.setDate(anchor.getDate() - (day - 1))         // weekday → จ สัปดาห์นี้
+  return Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    return localYMD(d)
+  })
+})
 
 const todayLabel = computed(() => {
   const d = new Date(anchorStr.value + 'T00:00:00')
@@ -325,6 +351,24 @@ function onDateChange(e: Event) {
   offsetDays.value = Math.min(0, Math.round(diffMs / 86400000))
 }
 
+function setViewMode(mode: 'daily' | 'week') {
+  if (mode === 'daily') offsetDays.value = 0  // daily กลับมาที่วันนี้เสมอ
+  viewMode.value = mode
+}
+
+function navigate(direction: 1 | -1) {
+  const todayMs = new Date(dateStr(0) + 'T00:00:00').getTime()
+  if (viewMode.value === 'week') {
+    offsetDays.value = Math.min(0, offsetDays.value + direction * 7)
+  } else {
+    const d = new Date(anchorStr.value + 'T00:00:00')
+    d.setDate(d.getDate() + direction)
+    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + direction)
+    const newOffset = Math.round((d.getTime() - todayMs) / 86400000)
+    offsetDays.value = Math.min(0, newOffset)
+  }
+}
+
 const projects = computed(() => projectsStore.projects)
 
 function allTasks(projectId: string): Task[] {
@@ -333,21 +377,8 @@ function allTasks(projectId: string): Task[] {
   return [...result.untracked, ...result.linked]
 }
 
-function yesterdayTasks(projectId: string): Task[] {
-  return allTasks(projectId).filter(t => t.dueDate === prevStr.value)
-}
-
-function todayTasks(projectId: string): Task[] {
-  const anchor = anchorStr.value
-  return allTasks(projectId).filter(t => {
-    if (t.dueDate === anchor) return true
-    if (t.dueDate && t.dueDate < anchor && !t.isChecked) return true
-    return false
-  })
-}
-
-function isOverdue(task: Task): boolean {
-  return !!(task.dueDate && task.dueDate < anchorStr.value && !task.isChecked)
+function tasksOnDate(projectId: string, date: string): Task[] {
+  return allTasks(projectId).filter(t => t.dueDate === date)
 }
 
 function strip(text: string): string {
@@ -390,15 +421,11 @@ function getEntries(projectId: string, date: string): string[] {
 }
 
 async function loadEntries() {
-  const [prev, anchor] = [prevStr.value, anchorStr.value]
+  const dates = visibleDates.value
   const ps = projectsStore.projects
   const keys = [
-    ...ps.flatMap(p => [
-      { ek: `${p.id}:${prev}`, sk: entriesKey(p.id, prev) },
-      { ek: `${p.id}:${anchor}`, sk: entriesKey(p.id, anchor) },
-    ]),
-    { ek: `__note__:${prev}`, sk: entriesKey('__note__', prev) },
-    { ek: `__note__:${anchor}`, sk: entriesKey('__note__', anchor) },
+    ...ps.flatMap(p => dates.map(d => ({ ek: `${p.id}:${d}`, sk: entriesKey(p.id, d) }))),
+    ...dates.map(d => ({ ek: `__note__:${d}`, sk: entriesKey('__note__', d) })),
   ]
   const values = await Promise.all(keys.map(k => window.qaApi.getNote(k.sk)))
   const patch: Record<string, string[]> = {}
@@ -410,7 +437,7 @@ async function loadEntries() {
 
 function startEdit(projectId: string, date: string, idx: number, text: string) {
   inputProjectId.value = projectId
-  inputDay.value = date === anchorStr.value ? 'today' : 'yesterday'
+  inputDate.value = date
   inputText.value = text
   editingRef.value = { projectId, date, idx }
 }
@@ -419,7 +446,7 @@ async function addEntry() {
   const text = inputText.value.trim()
   const pid = inputProjectId.value
   if (!text || !pid) return
-  const date = inputDay.value === 'today' ? anchorStr.value : prevStr.value
+  const date = inputDate.value
   const key = `${pid}:${date}`
 
   if (editingRef.value && editingRef.value.projectId === pid && editingRef.value.date === date) {
@@ -471,7 +498,11 @@ async function removeEntry(projectId: string, date: string, idx: number) {
   await window.qaApi.setNote(entriesKey(projectId, date), JSON.stringify(list))
 }
 
-watch([anchorStr, prevStr], () => { loadNotes(); loadEntries() })
+watch([anchorStr, viewMode], () => {
+  inputDate.value = anchorStr.value
+  loadNotes()
+  loadEntries()
+})
 watch(() => projectsStore.projects, loadEntries)
 
 onMounted(() => { load(); loadNotes(); loadEntries() })

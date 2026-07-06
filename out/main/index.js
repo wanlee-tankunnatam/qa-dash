@@ -75,6 +75,48 @@ class KeychainService {
       throw new Error("KEYCHAIN_ERROR: " + err.message);
     }
   }
+  async setServiceToken(id, token) {
+    try {
+      await keytar.setPassword(this.SERVICE, `svc:${id}:token`, token);
+    } catch (err) {
+      throw new Error("KEYCHAIN_ERROR: " + err.message);
+    }
+  }
+  async getServiceToken(id) {
+    try {
+      return await keytar.getPassword(this.SERVICE, `svc:${id}:token`);
+    } catch (err) {
+      throw new Error("KEYCHAIN_ERROR: " + err.message);
+    }
+  }
+  async deleteServiceToken(id) {
+    try {
+      await keytar.deletePassword(this.SERVICE, `svc:${id}:token`);
+    } catch (err) {
+      throw new Error("KEYCHAIN_ERROR: " + err.message);
+    }
+  }
+  async setServiceSecret(id, secret) {
+    try {
+      await keytar.setPassword(this.SERVICE, `svc:${id}:secret`, secret);
+    } catch (err) {
+      throw new Error("KEYCHAIN_ERROR: " + err.message);
+    }
+  }
+  async getServiceSecret(id) {
+    try {
+      return await keytar.getPassword(this.SERVICE, `svc:${id}:secret`);
+    } catch (err) {
+      throw new Error("KEYCHAIN_ERROR: " + err.message);
+    }
+  }
+  async deleteServiceSecret(id) {
+    try {
+      await keytar.deletePassword(this.SERVICE, `svc:${id}:secret`);
+    } catch (err) {
+      throw new Error("KEYCHAIN_ERROR: " + err.message);
+    }
+  }
 }
 const DEFAULT_PROJECT_CONFIG = {
   ticketRegex: "[A-Z]+-\\d+",
@@ -619,6 +661,8 @@ var IpcChannel = /* @__PURE__ */ ((IpcChannel2) => {
   IpcChannel2["CREDENTIALS_UPSERT"] = "credentials:upsert";
   IpcChannel2["CREDENTIALS_DELETE"] = "credentials:delete";
   IpcChannel2["CREDENTIALS_GET_PASSWORD"] = "credentials:get-password";
+  IpcChannel2["CREDENTIALS_GET_TOKEN"] = "credentials:get-token";
+  IpcChannel2["CREDENTIALS_GET_SECRET"] = "credentials:get-secret";
   IpcChannel2["SYNC_COMPLETED"] = "event:sync:completed";
   IpcChannel2["DANGER_ZONE_TRIGGERED"] = "event:dangerzone:triggered";
   IpcChannel2["STREAM_CHUNK"] = "event:stream:chunk";
@@ -1344,16 +1388,26 @@ function registerHandlers(configStore, repoScanner, jiraClient, dangerZoneTracke
   ipcMain.handle(IpcChannel.CREDENTIALS_LIST, () => {
     return configStore.getServiceCredentials();
   });
-  ipcMain.handle(IpcChannel.CREDENTIALS_UPSERT, async (_, entry, password) => {
+  ipcMain.handle(IpcChannel.CREDENTIALS_UPSERT, async (_, entry, password, token, secret) => {
     configStore.upsertServiceCredential(entry);
     if (password) await keychainService.setServicePassword(entry.id, password);
+    if (token) await keychainService.setServiceToken(entry.id, token);
+    if (secret) await keychainService.setServiceSecret(entry.id, secret);
   });
   ipcMain.handle(IpcChannel.CREDENTIALS_DELETE, async (_, id) => {
     configStore.deleteServiceCredential(id);
     await keychainService.deleteServicePassword(id);
+    await keychainService.deleteServiceToken(id);
+    await keychainService.deleteServiceSecret(id);
   });
   ipcMain.handle(IpcChannel.CREDENTIALS_GET_PASSWORD, async (_, id) => {
     return keychainService.getServicePassword(id);
+  });
+  ipcMain.handle(IpcChannel.CREDENTIALS_GET_TOKEN, async (_, id) => {
+    return keychainService.getServiceToken(id);
+  });
+  ipcMain.handle(IpcChannel.CREDENTIALS_GET_SECRET, async (_, id) => {
+    return keychainService.getServiceSecret(id);
   });
   ipcMain.handle(IpcChannel.DIALOG_OPEN_FOLDER, async () => {
     const win = getWindow();

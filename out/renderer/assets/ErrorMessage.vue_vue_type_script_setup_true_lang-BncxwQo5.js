@@ -1,4 +1,4 @@
-import { d as defineComponent, b as openBlock, c as createElementBlock, e as createBaseVNode, t as toDisplayString, j as createCommentVNode } from "./index-Ruh7bkA3.js";
+import { d as defineComponent, b as openBlock, c as createElementBlock, e as createBaseVNode, t as toDisplayString, s as createCommentVNode } from "./index-DKW7vBme.js";
 const _hoisted_1 = { class: "rounded-lg border border-red-200 bg-red-50 p-4 flex items-start gap-3" };
 const _hoisted_2 = { class: "flex-1" };
 const _hoisted_3 = { class: "text-sm text-red-700" };

@@ -1,5 +1,5 @@
-import { d as defineComponent, u as useProjectsStore, w as watch, o as onMounted, b as openBlock, c as createElementBlock, e as createBaseVNode, t as toDisplayString, j as createCommentVNode, F as Fragment, r as renderList, y as unref, g as createBlock, B as createStaticVNode, q as ref, s as computed, n as normalizeClass, f as createTextVNode, h as createVNode, I as h } from "./index-Ruh7bkA3.js";
-import { _ as _sfc_main$1 } from "./LoadingSpinner.vue_vue_type_script_setup_true_lang-BcEQEbaR.js";
+import { d as defineComponent, u as useProjectsStore, B as useJiraStore, w as watch, o as onMounted, b as openBlock, c as createElementBlock, e as createBaseVNode, t as toDisplayString, s as createCommentVNode, F as Fragment, j as renderList, z as unref, g as createBlock, C as createStaticVNode, r as ref, x as computed, n as normalizeClass, f as createTextVNode, h as createVNode, J as h } from "./index-DKW7vBme.js";
+import { _ as _sfc_main$1 } from "./LoadingSpinner.vue_vue_type_script_setup_true_lang-DLc3VGCp.js";
 const _hoisted_1 = { class: "flex flex-col h-full bg-slate-50" };
 const _hoisted_2 = { class: "flex flex-col gap-0 bg-white border-b border-slate-100" };
 const _hoisted_3 = { class: "flex items-center justify-between px-6 pt-4 pb-2" };
@@ -30,17 +30,19 @@ const _hoisted_15 = {
 const _hoisted_16 = { class: "px-4 py-2.5" };
 const _hoisted_17 = { class: "flex items-center gap-2" };
 const _hoisted_18 = { class: "text-slate-700 font-medium" };
-const _hoisted_19 = { class: "px-3 py-2.5 text-center" };
+const _hoisted_19 = ["onClick"];
 const _hoisted_20 = { class: "px-3 py-2.5 text-center" };
 const _hoisted_21 = { class: "px-3 py-2.5 text-center" };
 const _hoisted_22 = { class: "px-3 py-2.5 text-center" };
 const _hoisted_23 = { class: "px-3 py-2.5 text-center" };
 const _hoisted_24 = { class: "px-3 py-2.5 text-center" };
-const _hoisted_25 = { class: "px-3 py-2.5 text-right font-mono text-slate-400" };
+const _hoisted_25 = { class: "px-3 py-2.5 text-center" };
+const _hoisted_26 = { class: "px-3 py-2.5 text-right font-mono text-slate-400" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "SprintPage",
   setup(__props) {
     const projectsStore = useProjectsStore();
+    const jiraStore = useJiraStore();
     const loading = ref(false);
     const activeProjectId = ref("");
     const activeSprint = ref(null);
@@ -48,6 +50,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const tcCoverage = ref({});
     const gitDateMap = ref({});
     const collapsed = ref(/* @__PURE__ */ new Set());
+    const jiraSite = ref("");
+    function buildJiraBase(site) {
+      if (!site) return "";
+      return site.startsWith("http") ? site.replace(/\/$/, "") : `https://${site}.atlassian.net`;
+    }
+    function openJira(key) {
+      if (!jiraSite.value || !key) return;
+      const base = buildJiraBase(jiraSite.value);
+      if (!base) return;
+      window.qaApi.openExternal(`${base}/browse/${key}`);
+    }
     const DEV_STATUS = {
       done: { label: "Done", cls: "bg-slate-100 text-slate-600 ring-slate-300" },
       "in-progress": { label: "In Prog", cls: "bg-blue-50 text-blue-700 ring-blue-200" },
@@ -109,12 +122,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         tcCoverage.value = result.tcCoverage ?? {};
         gitDateMap.value = result.gitDateMap ?? {};
         activeSprint.value = sprint;
+        const allKeys = result.epicHierarchy.flatMap((e) => e.stories.flatMap((s) => s.jiraKeys));
+        if (allKeys.length > 0) {
+          jiraStore.fetchTickets(allKeys).catch(() => {
+          });
+        }
       } finally {
         loading.value = false;
       }
     }
     watch(activeProjectId, loadSprint);
     onMounted(async () => {
+      const settings = await window.qaApi.getJiraSettings();
+      if (settings?.site) jiraSite.value = settings.site;
       if (projectsStore.projects.length === 0) {
         await projectsStore.fetchProjects();
       }
@@ -207,47 +227,48 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       createBaseVNode("td", _hoisted_16, [
                         createBaseVNode("div", _hoisted_17, [
                           createBaseVNode("span", _hoisted_18, toDisplayString(story.label), 1),
-                          (openBlock(true), createElementBlock(Fragment, null, renderList(story.jiraKeys.slice(0, 2), (k) => {
-                            return openBlock(), createElementBlock("span", {
+                          (openBlock(true), createElementBlock(Fragment, null, renderList([...new Set(story.jiraKeys)].filter((k) => unref(jiraStore).getTicket(k)).slice(0, 2), (k) => {
+                            return openBlock(), createElementBlock("button", {
                               key: k,
-                              class: "text-indigo-500 font-mono bg-indigo-50 px-1 py-0.5 rounded text-[10px]"
-                            }, toDisplayString(k), 1);
+                              class: "text-indigo-500 font-mono bg-indigo-50 hover:bg-indigo-100 hover:underline px-1 py-0.5 rounded text-[10px]",
+                              onClick: ($event) => openJira(k)
+                            }, toDisplayString(k), 9, _hoisted_19);
                           }), 128))
                         ])
                       ]),
-                      createBaseVNode("td", _hoisted_19, [
+                      createBaseVNode("td", _hoisted_20, [
                         createBaseVNode("span", {
                           class: normalizeClass(["inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1", statusBadge(story.status).cls])
                         }, toDisplayString(statusBadge(story.status).label), 3)
                       ]),
-                      createBaseVNode("td", _hoisted_20, [
+                      createBaseVNode("td", _hoisted_21, [
                         createVNode(CheckMark, {
                           has: coverage(story.slug)?.hasAPI
                         }, null, 8, ["has"])
                       ]),
-                      createBaseVNode("td", _hoisted_21, [
+                      createBaseVNode("td", _hoisted_22, [
                         createVNode(CheckMark, {
                           has: coverage(story.slug)?.hasIntegration
                         }, null, 8, ["has"])
                       ]),
-                      createBaseVNode("td", _hoisted_22, [
+                      createBaseVNode("td", _hoisted_23, [
                         createVNode(CheckMark, {
                           has: coverage(story.slug)?.hasUI
                         }, null, 8, ["has"])
                       ]),
-                      createBaseVNode("td", _hoisted_23, [
+                      createBaseVNode("td", _hoisted_24, [
                         createVNode(CheckMark, {
                           has: coverage(story.slug)?.hasE2E,
                           color: "teal"
                         }, null, 8, ["has"])
                       ]),
-                      createBaseVNode("td", _hoisted_24, [
+                      createBaseVNode("td", _hoisted_25, [
                         createVNode(CheckMark, {
                           has: coverage(story.slug)?.hasScript,
                           color: "indigo"
                         }, null, 8, ["has"])
                       ]),
-                      createBaseVNode("td", _hoisted_25, toDisplayString(latestDate(story.jiraKeys) ?? "—"), 1)
+                      createBaseVNode("td", _hoisted_26, toDisplayString(latestDate(story.jiraKeys) ?? "—"), 1)
                     ]);
                   }), 128))
                 ])
