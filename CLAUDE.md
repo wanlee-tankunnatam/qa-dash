@@ -147,8 +147,9 @@ PM Lead → PA → BA → Dev Lead → Dev BE + Dev FE (parallel) → Dev Lead r
 | QA Role → BA | `[QA-ROLE→BA]` | AC ที่กำกวม |
 
 ### ขอบเขต MVP
-- **ใน scope:** US-001 ถึง US-016 ใน `docs/mvp-1.0/user-stories.md`
-- **นอก scope:** features ใดๆ ที่ไม่อยู่ใน PRD — ต้องผ่าน `/roles:pa story` ก่อนเสมอ
+- **MVP 1.3 (shipped):** US-001 ถึง US-016 ใน `docs/mvp-1.0/user-stories.md`
+- **MVP 1.4 (Fast-Follow):** Epic 9 — US-018, US-019, US-020, US-021, US-022 (backlog) [ถูกล็อกจนกว่า MVP 1.3 ship + QA sign-off]
+- **นอก scope:** features ใดๆ ที่ไม่อยู่ใน approved roadmap — ต้องผ่าน `/roles:pa story` ก่อนเสมอ
 - **PM เป็นผู้ตัดสินใจสุดท้าย** เมื่อมี scope conflict
 
 ---
