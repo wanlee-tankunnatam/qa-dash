@@ -63,8 +63,12 @@ import { useRoute } from 'vue-router'
 import SideNav from './components/layout/SideNav.vue'
 import AITerminalPanel from './components/ai/AITerminalPanel.vue'
 import type { SyncSummary } from '../../shared/constants'
+import { useProjectsStore } from '@renderer/stores/projects'
+import { useTasksStore } from '@renderer/stores/tasks'
 
 const route = useRoute()
+const projectsStore = useProjectsStore()
+const tasksStore = useTasksStore()
 
 const PAGE_LABELS: Record<string, string> = {
   home: 'หน้าแรก (ตารางงานรายวัน)',
@@ -110,8 +114,11 @@ let cleanupSync: (() => void) | null = null
 let cleanupDangerZone: (() => void) | null = null
 
 onMounted(() => {
-  cleanupSync = window.qaApi.onSyncCompleted((summary: SyncSummary) => {
-    console.log('[App] sync completed', summary)
+  cleanupSync = window.qaApi.onSyncCompleted(async (summary: SyncSummary) => {
+    // AC-009-03: sync เสร็จ (รวม auto-sync 09:00) → refresh stores ให้ทุกหน้าที่อ่าน store re-render อัตโนมัติ
+    if (import.meta.env.DEV) console.log('[App] sync completed', summary)
+    await projectsStore.fetchProjects()
+    await Promise.all(projectsStore.projects.map((p) => tasksStore.scanProject(p.id)))
   })
   cleanupDangerZone = window.qaApi.onDangerZoneTriggered((projectId: string) => {
     console.log('[App] danger zone triggered for', projectId)

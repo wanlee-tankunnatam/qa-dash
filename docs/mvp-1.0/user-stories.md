@@ -227,3 +227,67 @@
 
 **Dependencies:**
 - US-013 (Auto Sync 09:00) — Sync ต้องเสร็จก่อน 09:10 จึงจะ focus window
+
+---
+
+## Epic 9: AI Test Lifecycle Assist (MVP 1.4 — APPROVED by PM)
+
+> **สถานะ:** ร่างโดย PA จาก feature request (แรงบันดาลใจ: UiPath Test Cloud AI-Powered Testing Life Cycle)
+> **✅ PM Decision:** เข้า **MVP 1.4 (Fast-Follow)** — ไม่เข้า MVP 1.3
+> **🔒 Freeze gate:** ห้ามเริ่ม implement จนกว่า MVP 1.3 จะ ship และผ่าน QA sign-off
+> **ลำดับ implement (PM):** US-021 → US-018 → US-019 → US-020
+> **ปรัชญา:** หยิบเฉพาะ "ครึ่งซ้าย" ของ lifecycle (Design/Analyze) — **ไม่รวม** Execute/Robot/Studio ที่ขัดปรัชญา read-only sentinel
+> **กฎที่ยึด:** ทุก story เป็น read-only + copy-out draft เท่านั้น — ไม่ auto-create/change Jira, AI calls จาก main process เท่านั้น (สอดคล้อง AC 3.1, 3.2 และกฎ NEVER #1, #3, #4)
+
+### US-018 — AI Gap Check เอกสาร Requirement
+**ในฐานะ** QA Engineer,
+**ฉันต้องการ** ให้ Claude อ่านไฟล์ `.md` หรือ Linked Task แล้วชี้ว่ายังขาด Acceptance Criteria / edge case / validation อะไร,
+**เพื่อที่** ฉันเห็นช่องโหว่ของ requirement ก่อนเริ่มทดสอบ โดยไม่ต้องไล่อ่านเองทั้งหมด
+
+**เงื่อนไขการยอมรับ:**
+- ปุ่ม "Gap Check with AI" อยู่บน Untracked/Linked Task แต่ละรายการ หรือระดับไฟล์ `.md`
+- Claude รับ context: เนื้อหาไฟล์ `.md` (บรรทัดรอบข้าง), ชื่อไฟล์, ชื่อโปรเจกต์ — เหมือน pattern ของ US-011
+- ผลลัพธ์แสดงเป็นหมวด: Missing Acceptance Criteria / Missing Edge Cases / Missing Validation Rules
+- แต่ละรายการเป็น read-only insight (ข้อความอย่างเดียว) — **ไม่** แก้ไขไฟล์ `.md` และ **ไม่** กระทบ Jira
+- AI call ทำจาก main process เท่านั้น (renderer รับแค่ผลลัพธ์)
+
+### US-019 — AI ร่าง Test Case จาก Requirement
+**ในฐานะ** QA Engineer,
+**ฉันต้องการ** ให้ Claude ร่าง Test Case (scenario + test data + expected result) จากเอกสารหรือ Task,
+**เพื่อที่** ฉันมีจุดตั้งต้นในการเขียนเทส โดยไม่ต้องเริ่มจากศูนย์
+
+**เงื่อนไขการยอมรับ:**
+- ปุ่ม "Draft Test Cases with AI" บน Task หรือไฟล์ `.md`
+- Claude คืนค่าเป็น JSON (non-streaming) — โครงสร้างแต่ละเคส: `scenario`, `testData`, `expectedResult`, `type` (เช่น Boundary / E2E / Edge)
+- ผู้ใช้ review และแก้ไขทุก field ได้ก่อนนำไปใช้
+- ปุ่ม "Copy" คัดลอก test case ที่ format แล้ว (Markdown/plain text)
+- **ไม่มีปุ่ม** submit/push เข้า Jira หรือ test tool ใดๆ — copy-out เท่านั้น (สอดคล้อง AC 3.1)
+- มีข้อความชัดเจน: "Test case เหล่านี้เป็นเพียงร่าง — ตรวจสอบก่อนใช้งานจริง"
+
+### US-020 — Coverage View (มุมมอง Test Coverage)
+**ในฐานะ** QA Engineer,
+**ฉันต้องการ** เห็นมุมมองว่า Linked Task / Ticket ไหนยังไม่มี Test Coverage,
+**เพื่อที่** ฉันรู้ว่า requirement ส่วนไหนยังไม่ถูกทดสอบครอบคลุม
+
+**เงื่อนไขการยอมรับ:**
+- ใช้ข้อมูลเดิมจาก US-004 (scan) และ US-007 (Jira status) — **ไม่** เพิ่ม data source ใหม่
+- แสดงรายการ Linked Task พร้อมสถานะ Coverage: "มี Test Case draft แล้ว" (จาก US-019) / "ยังไม่มี"
+- Untracked Task ทั้งหมดถือเป็น "No Coverage" โดยปริยาย
+- เป็น view read-only — ไม่แก้ไขข้อมูลใดๆ
+- (Optional) filter แสดงเฉพาะรายการที่ยังไม่มี coverage
+
+### US-021 — Start My Day แบบ Analysis Report
+**ในฐานะ** QA Engineer,
+**ฉันต้องการ** ให้ Briefing ประจำวัน (US-010) มีส่วนวิเคราะห์เชิงลึกแบบ Analysis Report,
+**เพื่อที่** ฉันเห็น top risk และ pattern ของงานค้าง ไม่ใช่แค่รายการงาน
+
+**เงื่อนไขการยอมรับ:**
+- ต่อยอด US-010 — ใช้ปุ่ม "Start My Day" เดิม ไม่เพิ่ม flow ใหม่
+- ผลลัพธ์เพิ่มส่วน: **Top Risks** (งานที่เสี่ยงหลุดสูงสุด), **Common Patterns** (เช่น "โปรเจกต์ X มี untracked สะสมทุกวัน"), **Suggested Fix Order** (จัดลำดับสิ่งที่ควรเคลียร์ก่อน)
+- ยังคงแสดงแบบ streaming เหมือน US-010
+- วิเคราะห์จากข้อมูลที่ระบบสรุปให้เท่านั้น (สอดคล้อง AC 4.2) — ไม่มีผลรันเทสจริง เพราะ QADash ไม่ execute
+- **ไม่** เปลี่ยนพฤติกรรม US-010 เดิม (backward compatible)
+
+**Dependencies:**
+- US-018, US-019 — Coverage View (US-020) อ้างผลจาก Test Case draft
+- US-010 — US-021 ต่อยอดจาก Briefing เดิม

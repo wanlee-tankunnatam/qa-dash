@@ -1,4 +1,4 @@
-import { A as defineStore } from "./index-DKW7vBme.js";
+import { A as defineStore } from "./index-Bq_91m8v.js";
 const useDraftStore = defineStore("draft", {
   state: () => ({
     current: null,

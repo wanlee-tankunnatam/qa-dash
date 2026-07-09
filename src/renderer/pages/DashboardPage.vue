@@ -150,8 +150,34 @@
 
       <!-- Table for active project -->
       <div class="flex-1 overflow-auto">
+        <!-- US-008 Priority Queue (AC-005) — รวมทุกโปรเจกต์ -->
+        <div v-if="viewTab === 'priority'" class="p-4 space-y-6">
+          <div v-for="section in priorityQueue" :key="section.id">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-sm">{{ PRIORITY_SECTION_STYLE[section.id].dot }}</span>
+              <span class="text-sm font-semibold text-slate-700">{{ section.label }}</span>
+              <!-- AC-005-05/07: count badge เสมอ แม้เป็น 0 -->
+              <span :class="['text-xs rounded-full px-2 py-0.5 font-medium', PRIORITY_SECTION_STYLE[section.id].badge]">{{ section.tasks.length }}</span>
+            </div>
+            <div v-if="section.tasks.length === 0" class="text-xs text-slate-300 italic pl-6 pb-1">— ไม่มีงานในกลุ่มนี้</div>
+            <div v-else class="space-y-1">
+              <button
+                v-for="row in section.tasks"
+                :key="row.id"
+                class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md bg-white hover:bg-slate-50 border border-slate-100 transition-colors"
+                @click="goToProject(row.projectId)"
+              >
+                <span v-if="row.jiraKey" class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 text-xs font-mono font-semibold flex-shrink-0">{{ row.jiraKey }}</span>
+                <span class="flex-1 min-w-0 truncate text-xs text-slate-700">{{ row.label }}</span>
+                <span class="text-[10px] text-slate-400 font-mono flex-shrink-0">{{ row.projectName }}</span>
+                <span v-if="row.dueDate" class="text-[10px] text-slate-500 font-mono flex-shrink-0">{{ row.dueDate }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- scanning -->
-        <div v-if="tasksStore.scanning[activeProjectId]" class="flex items-center justify-center mt-16">
+        <div v-else-if="tasksStore.scanning[activeProjectId]" class="flex items-center justify-center mt-16">
           <LoadingSpinner size="md" />
         </div>
 
@@ -344,7 +370,7 @@
                         v-for="task in secGroup.tasks"
                         :key="task.id"
                         class="bg-white hover:bg-slate-50 transition-colors border-b border-slate-50"
-                        :class="(task as any).isIgnoredToday ? 'opacity-40' : ''"
+                        :class="!task.isLinked && task.isIgnoredToday ? 'opacity-40' : ''"
                       >
                         <td class="px-6 py-2.5 pl-14 w-[400px] max-w-[400px]">
                           <div class="flex items-center gap-2 min-w-0">
@@ -364,7 +390,7 @@
                             <span
                               v-if="task.isLinked"
                               class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 text-xs font-mono font-semibold flex-shrink-0"
-                            >{{ (task as any).jiraKey }}</span>
+                            >{{ task.isLinked ? task.jiraKey : '' }}</span>
                             <div class="flex flex-col min-w-0">
                               <span
                                 class="line-clamp-2 text-xs leading-relaxed"
@@ -426,9 +452,11 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface Props { initialView?: ViewTab }
 const props = withDefaults(defineProps<Props>(), { initialView: 'qa' })
+import type { UntrackedTask, LinkedTask } from '@shared/types/task'
 import { useProjectsStore } from '@renderer/stores/projects'
 import { useTasksStore } from '@renderer/stores/tasks'
 import { useDangerZoneStore } from '@renderer/stores/dangerZone'
@@ -437,6 +465,7 @@ import DangerZoneBanner from '@renderer/components/dashboard/DangerZoneBanner.vu
 import LoadingSpinner from '@renderer/components/shared/LoadingSpinner.vue'
 import ErrorMessage from '@renderer/components/shared/ErrorMessage.vue'
 
+const router = useRouter()
 const projectsStore = useProjectsStore()
 const tasksStore = useTasksStore()
 const jiraStore = useJiraStore()
@@ -449,6 +478,9 @@ const activeLinked = computed(() => tasksStore.getLinked(activeProjectId.value))
 
 type QaCategory = 'test-plan' | 'integration-test' | 'e2e' | 'script' | 'manual' | 'other-qa'
 type TaskRole = 'QA' | 'DEV'
+
+// Task ที่ประกอบใน DashboardPage: discriminated union ด้วย isLinked (synthesize ตอน map allTasks)
+type DashTask = (UntrackedTask & { isLinked: false }) | (LinkedTask & { isLinked: true })
 
 function extractRole(text: string): TaskRole | null {
   if (/\(QA\)/i.test(text)) return 'QA'
@@ -530,8 +562,8 @@ const DEV_STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   optional:        { label: 'Optional',   cls: 'bg-gray-100 text-gray-400 ring-gray-200' },
 }
 
-function devStatusBadge(task: { isLinked: boolean }): { label: string; cls: string } | null {
-  const key = (task as any).jiraKey as string | undefined
+function devStatusBadge(task: DashTask): { label: string; cls: string } | null {
+  const key = task.isLinked ? task.jiraKey : undefined
   if (!key) return null
   const status = devStatusMap.value[key]
   if (!status) return null
@@ -552,9 +584,9 @@ function qaWorkBadge(task: { isChecked: boolean }): { label: string; cls: string
   return { label: 'Pending', cls: 'bg-slate-100 text-slate-500 ring-slate-200' }
 }
 
-function jiraStatusBadge(task: { isLinked: boolean }): { label: string; cls: string } {
-  const jiraTicket = (task as any).jiraTicket
-  if (task.isLinked && jiraTicket?.status) {
+function jiraStatusBadge(task: DashTask): { label: string; cls: string } {
+  const jiraTicket = task.isLinked ? task.jiraTicket : undefined
+  if (jiraTicket?.status) {
     return JIRA_STATUS_BADGE[jiraTicket.status] ?? { label: jiraTicket.status, cls: 'bg-slate-100 text-slate-600 ring-slate-200' }
   }
   if (task.isLinked) return { label: 'Linked', cls: 'bg-indigo-50 text-indigo-600 ring-indigo-200' }
@@ -573,9 +605,10 @@ const searchQuery = ref('')
 const activeCategories = ref<Set<QaCategory>>(new Set())
 const activeRole = ref<TaskRole | null>(null)
 
-type ViewTab = 'today' | 'yesterday' | 'weekly' | 'qa'
+type ViewTab = 'today' | 'yesterday' | 'weekly' | 'qa' | 'priority'
 const VIEW_TABS: { id: ViewTab; label: string }[] = [
   { id: 'qa', label: 'QA View' },
+  { id: 'priority', label: 'Priority Queue' },
   { id: 'weekly', label: 'Weekly' },
   { id: 'today', label: 'Today' },
 ]
@@ -655,6 +688,77 @@ const qaGroups = computed<QaGroup[]>(() => {
 const todayStr = new Date().toISOString().slice(0, 10)
 const yesterdayStr = (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10) })()
 const weekEndStr = (() => { const d = new Date(); d.setDate(d.getDate() + 6); return d.toISOString().slice(0, 10) })()
+
+// ── US-008 Priority Queue (AC-005) ─────────────────────────────────────────
+type PriorityRow = {
+  id: string
+  projectId: string
+  projectName: string
+  label: string
+  jiraKey?: string
+  fileRelativePath: string
+  lineNumber: number
+  dueDate?: string
+}
+type PrioritySectionId = 'blocker-failed' | 'overdue' | 'due-today'
+type PrioritySection = { id: PrioritySectionId; label: string; tasks: PriorityRow[] }
+
+// AC-005-01: 3 section เรียงคงที่เสมอ | AC-005-02/03/04: classifier + precedence (เข้า section แรกสุดที่เข้าเกณฑ์)
+// PA decision: Blocker/Failed = linked เท่านั้น; Overdue/Due Today รวม untracked ที่มี dueDate
+const priorityQueue = computed<PrioritySection[]>(() => {
+  const blockerFailed: PriorityRow[] = []
+  const overdue: PriorityRow[] = []
+  const dueToday: PriorityRow[] = []
+
+  for (const project of projectsStore.projects) {
+    // Linked tasks: Blocker/Failed (Jira) → Overdue → Due Today
+    for (const t of tasksStore.getLinked(project.id)) {
+      if (t.isChecked) continue
+      const ticket = jiraStore.getTicket(t.jiraKey) ?? t.jiraTicket
+      const due = ticket?.dueDate ?? t.dueDate
+      const row: PriorityRow = {
+        id: t.id, projectId: project.id, projectName: project.name,
+        label: stripMd(t.rawText), jiraKey: t.jiraKey,
+        fileRelativePath: t.fileRelativePath, lineNumber: t.lineNumber, dueDate: due,
+      }
+      if (ticket && (ticket.priority === 'Blocker' || ticket.status === 'FAILED' || ticket.status === 'BLOCKED')) {
+        blockerFailed.push(row)
+      } else if (due && due < todayStr && ticket?.status !== 'DONE') {
+        overdue.push(row)
+      } else if (due === todayStr) {
+        dueToday.push(row)
+      }
+    }
+    // Untracked tasks: Overdue / Due Today เฉพาะที่มี dueDate (เคารพ ignore + done)
+    for (const t of tasksStore.getUntracked(project.id)) {
+      if (t.isChecked || t.isIgnoredToday || !t.dueDate) continue
+      const row: PriorityRow = {
+        id: t.id, projectId: project.id, projectName: project.name,
+        label: stripMd(t.rawText),
+        fileRelativePath: t.fileRelativePath, lineNumber: t.lineNumber, dueDate: t.dueDate,
+      }
+      if (t.dueDate < todayStr) overdue.push(row)
+      else if (t.dueDate === todayStr) dueToday.push(row)
+    }
+  }
+
+  return [
+    { id: 'blocker-failed', label: 'Blocker / Failed', tasks: blockerFailed },
+    { id: 'overdue', label: 'Overdue', tasks: overdue },
+    { id: 'due-today', label: 'Due Today', tasks: dueToday },
+  ]
+})
+
+const PRIORITY_SECTION_STYLE: Record<PrioritySectionId, { dot: string; badge: string }> = {
+  'blocker-failed': { dot: '🔴', badge: 'bg-red-100 text-red-700' },
+  'overdue':        { dot: '🟠', badge: 'bg-amber-100 text-amber-700' },
+  'due-today':      { dot: '🔵', badge: 'bg-blue-100 text-blue-700' },
+}
+
+// AC-005-06: คลิก task → ไปหน้า Project ของ task นั้น
+function goToProject(projectId: string): void {
+  router.push({ name: 'project', params: { id: projectId } })
+}
 
 function toggleCollapse(id: string) {
   const s = new Set(collapsedCategories.value)
@@ -815,7 +919,7 @@ const groupedTasks = computed(() => {
           fileStoryMap.get(storyNum)!.push(t)
           continue
         }
-        const jiraKey = (t as any).jiraKey as string | undefined
+        const jiraKey = t.isLinked ? t.jiraKey : undefined
         if (jiraKey) {
           if (!jiraTaskMap.has(jiraKey)) jiraTaskMap.set(jiraKey, [])
           jiraTaskMap.get(jiraKey)!.push(t)

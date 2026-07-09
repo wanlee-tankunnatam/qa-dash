@@ -1,6 +1,6 @@
-import { A as defineStore, u as useProjectsStore, d as defineComponent, b as openBlock, c as createElementBlock, e as createBaseVNode, f as createTextVNode, t as toDisplayString, s as createCommentVNode, x as computed, a as useTasksStore, B as useJiraStore, r as ref, w as watch, o as onMounted, h as createVNode, z as unref, n as normalizeClass, g as createBlock, C as createStaticVNode, i as withCtx, F as Fragment, j as renderList, m as withDirectives, p as vModelText, y as resolveComponent, l as withModifiers } from "./index-DKW7vBme.js";
-import { _ as _sfc_main$3 } from "./LoadingSpinner.vue_vue_type_script_setup_true_lang-DLc3VGCp.js";
-import { _ as _sfc_main$2 } from "./ErrorMessage.vue_vue_type_script_setup_true_lang-BncxwQo5.js";
+import { A as defineStore, u as useProjectsStore, d as defineComponent, b as openBlock, c as createElementBlock, e as createBaseVNode, f as createTextVNode, t as toDisplayString, s as createCommentVNode, x as computed, a as useTasksStore, B as useJiraStore, r as ref, w as watch, o as onMounted, h as createVNode, z as unref, n as normalizeClass, g as createBlock, C as createStaticVNode, i as withCtx, F as Fragment, j as renderList, m as withDirectives, p as vModelText, y as resolveComponent, D as useRouter, l as withModifiers } from "./index-Bq_91m8v.js";
+import { _ as _sfc_main$3 } from "./LoadingSpinner.vue_vue_type_script_setup_true_lang-BGG7VSfd.js";
+import { _ as _sfc_main$2 } from "./ErrorMessage.vue_vue_type_script_setup_true_lang-DfzIRCNA.js";
 const useDangerZoneStore = defineStore("dangerZone", {
   state: () => ({
     states: {}
@@ -71,182 +71,208 @@ const _hoisted_15 = ["onClick"];
 const _hoisted_16 = { class: "flex-1 overflow-auto" };
 const _hoisted_17 = {
   key: 0,
+  class: "p-4 space-y-6"
+};
+const _hoisted_18 = { class: "flex items-center gap-2 mb-2" };
+const _hoisted_19 = { class: "text-sm" };
+const _hoisted_20 = { class: "text-sm font-semibold text-slate-700" };
+const _hoisted_21 = {
+  key: 0,
+  class: "text-xs text-slate-300 italic pl-6 pb-1"
+};
+const _hoisted_22 = {
+  key: 1,
+  class: "space-y-1"
+};
+const _hoisted_23 = ["onClick"];
+const _hoisted_24 = {
+  key: 0,
+  class: "px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 text-xs font-mono font-semibold flex-shrink-0"
+};
+const _hoisted_25 = { class: "flex-1 min-w-0 truncate text-xs text-slate-700" };
+const _hoisted_26 = { class: "text-[10px] text-slate-400 font-mono flex-shrink-0" };
+const _hoisted_27 = {
+  key: 1,
+  class: "text-[10px] text-slate-500 font-mono flex-shrink-0"
+};
+const _hoisted_28 = {
+  key: 1,
   class: "flex items-center justify-center mt-16"
 };
-const _hoisted_18 = {
-  key: 1,
-  class: "flex flex-col items-center justify-center mt-16 gap-2"
-};
-const _hoisted_19 = {
+const _hoisted_29 = {
   key: 2,
   class: "flex flex-col items-center justify-center mt-16 gap-2"
 };
-const _hoisted_20 = {
+const _hoisted_30 = {
   key: 3,
+  class: "flex flex-col items-center justify-center mt-16 gap-2"
+};
+const _hoisted_31 = {
+  key: 4,
   class: "p-4 space-y-6"
 };
-const _hoisted_21 = { class: "flex items-center gap-2 mb-2" };
-const _hoisted_22 = { class: "text-sm" };
-const _hoisted_23 = { class: "text-xs text-slate-400 bg-slate-100 rounded-full px-2 py-0.5" };
-const _hoisted_24 = { class: "w-full text-xs" };
-const _hoisted_25 = { class: "py-2 px-3 w-16 whitespace-nowrap" };
-const _hoisted_26 = { class: "text-slate-400 font-mono" };
-const _hoisted_27 = { class: "py-2 px-3" };
-const _hoisted_28 = { class: "text-slate-700" };
-const _hoisted_29 = { class: "py-2 px-3 w-24 text-center" };
-const _hoisted_30 = {
-  key: 1,
-  class: "text-slate-200"
-};
-const _hoisted_31 = { class: "py-2 px-3 w-14 text-center" };
-const _hoisted_32 = {
-  key: 0,
-  class: "text-purple-600 font-bold text-sm"
-};
-const _hoisted_33 = {
-  key: 1,
-  class: "text-slate-200"
-};
-const _hoisted_34 = { class: "py-2 px-3 w-20 text-center" };
-const _hoisted_35 = {
-  key: 0,
-  class: "text-purple-600 font-bold text-sm"
-};
-const _hoisted_36 = {
-  key: 1,
-  class: "text-slate-200"
-};
-const _hoisted_37 = { class: "py-2 px-3 w-12 text-center" };
-const _hoisted_38 = {
-  key: 0,
-  class: "text-purple-600 font-bold text-sm"
-};
-const _hoisted_39 = {
-  key: 1,
-  class: "text-slate-200"
-};
-const _hoisted_40 = { class: "py-2 px-3 w-14 text-center" };
+const _hoisted_32 = { class: "flex items-center gap-2 mb-2" };
+const _hoisted_33 = { class: "text-sm" };
+const _hoisted_34 = { class: "text-xs text-slate-400 bg-slate-100 rounded-full px-2 py-0.5" };
+const _hoisted_35 = { class: "w-full text-xs" };
+const _hoisted_36 = { class: "py-2 px-3 w-16 whitespace-nowrap" };
+const _hoisted_37 = { class: "text-slate-400 font-mono" };
+const _hoisted_38 = { class: "py-2 px-3" };
+const _hoisted_39 = { class: "text-slate-700" };
+const _hoisted_40 = { class: "py-2 px-3 w-24 text-center" };
 const _hoisted_41 = {
+  key: 1,
+  class: "text-slate-200"
+};
+const _hoisted_42 = { class: "py-2 px-3 w-14 text-center" };
+const _hoisted_43 = {
+  key: 0,
+  class: "text-purple-600 font-bold text-sm"
+};
+const _hoisted_44 = {
+  key: 1,
+  class: "text-slate-200"
+};
+const _hoisted_45 = { class: "py-2 px-3 w-20 text-center" };
+const _hoisted_46 = {
+  key: 0,
+  class: "text-purple-600 font-bold text-sm"
+};
+const _hoisted_47 = {
+  key: 1,
+  class: "text-slate-200"
+};
+const _hoisted_48 = { class: "py-2 px-3 w-12 text-center" };
+const _hoisted_49 = {
+  key: 0,
+  class: "text-purple-600 font-bold text-sm"
+};
+const _hoisted_50 = {
+  key: 1,
+  class: "text-slate-200"
+};
+const _hoisted_51 = { class: "py-2 px-3 w-14 text-center" };
+const _hoisted_52 = {
   key: 0,
   class: "text-teal-600 font-bold text-sm"
 };
-const _hoisted_42 = {
+const _hoisted_53 = {
   key: 1,
   class: "text-slate-200"
 };
-const _hoisted_43 = { class: "py-2 px-3 w-14 text-center" };
-const _hoisted_44 = {
+const _hoisted_54 = { class: "py-2 px-3 w-14 text-center" };
+const _hoisted_55 = {
   key: 0,
   class: "text-indigo-600 font-bold text-sm"
 };
-const _hoisted_45 = {
+const _hoisted_56 = {
   key: 1,
   class: "text-slate-200"
 };
-const _hoisted_46 = { class: "py-2 px-3 w-24 text-right" };
-const _hoisted_47 = {
+const _hoisted_57 = { class: "py-2 px-3 w-24 text-right" };
+const _hoisted_58 = {
   key: 0,
   class: "text-slate-500 font-mono text-[10px]"
 };
-const _hoisted_48 = {
+const _hoisted_59 = {
   key: 1,
   class: "text-slate-200"
 };
-const _hoisted_49 = { class: "py-2 px-3 w-32 text-right" };
-const _hoisted_50 = { class: "text-slate-500 font-mono text-[10px]" };
-const _hoisted_51 = { key: 4 };
-const _hoisted_52 = { class: "w-full text-sm" };
-const _hoisted_53 = ["onClick"];
-const _hoisted_54 = {
+const _hoisted_60 = { class: "py-2 px-3 w-32 text-right" };
+const _hoisted_61 = { class: "text-slate-500 font-mono text-[10px]" };
+const _hoisted_62 = { key: 5 };
+const _hoisted_63 = { class: "w-full text-sm" };
+const _hoisted_64 = ["onClick"];
+const _hoisted_65 = {
   colspan: "7",
   class: "px-5 py-2"
 };
-const _hoisted_55 = { class: "flex items-start gap-2" };
-const _hoisted_56 = { class: "text-xs font-semibold uppercase tracking-wide text-indigo-400 bg-indigo-100 px-1.5 py-0.5 rounded flex-shrink-0" };
-const _hoisted_57 = { class: "flex flex-col gap-1 min-w-0 flex-1" };
-const _hoisted_58 = { class: "flex items-center gap-2 flex-wrap" };
-const _hoisted_59 = { class: "text-xs font-bold text-indigo-700 leading-tight" };
-const _hoisted_60 = { class: "flex flex-wrap gap-1" };
-const _hoisted_61 = { class: "text-indigo-300 font-mono" };
-const _hoisted_62 = { class: "ml-auto text-xs text-indigo-400 flex-shrink-0 mt-0.5" };
-const _hoisted_63 = ["onClick"];
-const _hoisted_64 = {
+const _hoisted_66 = { class: "flex items-start gap-2" };
+const _hoisted_67 = { class: "text-xs font-semibold uppercase tracking-wide text-indigo-400 bg-indigo-100 px-1.5 py-0.5 rounded flex-shrink-0" };
+const _hoisted_68 = { class: "flex flex-col gap-1 min-w-0 flex-1" };
+const _hoisted_69 = { class: "flex items-center gap-2 flex-wrap" };
+const _hoisted_70 = { class: "text-xs font-bold text-indigo-700 leading-tight" };
+const _hoisted_71 = { class: "flex flex-wrap gap-1" };
+const _hoisted_72 = { class: "text-indigo-300 font-mono" };
+const _hoisted_73 = { class: "ml-auto text-xs text-indigo-400 flex-shrink-0 mt-0.5" };
+const _hoisted_74 = ["onClick"];
+const _hoisted_75 = {
   colspan: "7",
   class: "px-6 py-1.5 pl-10"
 };
-const _hoisted_65 = { class: "flex items-center gap-2" };
-const _hoisted_66 = {
+const _hoisted_76 = { class: "flex items-center gap-2" };
+const _hoisted_77 = {
   key: 1,
   class: "w-2.5 h-2.5 flex-shrink-0"
 };
-const _hoisted_67 = { class: "text-xs font-medium text-slate-600" };
-const _hoisted_68 = {
+const _hoisted_78 = { class: "text-xs font-medium text-slate-600" };
+const _hoisted_79 = {
   key: 3,
   class: "inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold bg-purple-50 text-purple-700 ring-1 ring-purple-200"
 };
-const _hoisted_69 = {
+const _hoisted_80 = {
   key: 4,
   class: "inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold bg-teal-50 text-teal-700 ring-1 ring-teal-200"
 };
-const _hoisted_70 = { class: "ml-auto text-xs text-slate-400" };
-const _hoisted_72 = { class: "px-6 py-2.5 pl-14 w-[400px] max-w-[400px]" };
-const _hoisted_73 = { class: "flex items-center gap-2 min-w-0" };
-const _hoisted_74 = ["onClick"];
-const _hoisted_75 = {
+const _hoisted_81 = { class: "ml-auto text-xs text-slate-400" };
+const _hoisted_83 = { class: "px-6 py-2.5 pl-14 w-[400px] max-w-[400px]" };
+const _hoisted_84 = { class: "flex items-center gap-2 min-w-0" };
+const _hoisted_85 = ["onClick"];
+const _hoisted_86 = {
   key: 0,
   class: "w-3.5 h-3.5 text-emerald-500",
   viewBox: "0 0 16 16",
   fill: "currentColor"
 };
-const _hoisted_76 = {
+const _hoisted_87 = {
   key: 1,
   class: "w-3.5 h-3.5 text-slate-300 hover:text-slate-400",
   viewBox: "0 0 16 16",
   fill: "currentColor"
 };
-const _hoisted_77 = {
+const _hoisted_88 = {
   key: 0,
   class: "px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 text-xs font-mono font-semibold flex-shrink-0"
 };
-const _hoisted_78 = { class: "flex flex-col min-w-0" };
-const _hoisted_79 = { class: "text-[10px] text-slate-300 font-mono truncate" };
-const _hoisted_80 = {
+const _hoisted_89 = { class: "flex flex-col min-w-0" };
+const _hoisted_90 = { class: "text-[10px] text-slate-300 font-mono truncate" };
+const _hoisted_91 = {
   key: 1,
   class: "inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-indigo-600 text-white flex-shrink-0"
 };
-const _hoisted_81 = {
+const _hoisted_92 = {
   key: 2,
   class: "inline-flex items-center rounded px-1.5 py-0.5 text-xs font-bold bg-rose-500 text-white flex-shrink-0"
 };
-const _hoisted_82 = { class: "px-4 py-2.5 text-center" };
-const _hoisted_83 = {
+const _hoisted_93 = { class: "px-4 py-2.5 text-center" };
+const _hoisted_94 = {
   key: 1,
   class: "text-xs text-slate-300"
 };
-const _hoisted_84 = { class: "px-4 py-2.5" };
-const _hoisted_85 = {
+const _hoisted_95 = { class: "px-4 py-2.5" };
+const _hoisted_96 = {
   key: 0,
   class: "text-xs text-slate-500 whitespace-nowrap"
 };
-const _hoisted_86 = {
+const _hoisted_97 = {
   key: 1,
   class: "text-xs text-slate-300"
 };
-const _hoisted_87 = { class: "px-4 py-2.5" };
-const _hoisted_88 = {
+const _hoisted_98 = { class: "px-4 py-2.5" };
+const _hoisted_99 = {
   key: 0,
   class: "text-xs text-slate-500 font-mono whitespace-nowrap"
 };
-const _hoisted_89 = {
+const _hoisted_100 = {
   key: 1,
   class: "text-xs text-slate-300"
 };
-const _hoisted_90 = { class: "px-4 py-2.5 text-center" };
-const _hoisted_91 = {
+const _hoisted_101 = { class: "px-4 py-2.5 text-center" };
+const _hoisted_102 = {
   key: 1,
   class: "text-xs text-slate-300"
 };
-const _hoisted_92 = { class: "px-4 py-2.5 text-center" };
+const _hoisted_103 = { class: "px-4 py-2.5 text-center" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "DashboardPage",
   props: {
@@ -254,6 +280,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const props = __props;
+    const router = useRouter();
     const projectsStore = useProjectsStore();
     const tasksStore = useTasksStore();
     const jiraStore = useJiraStore();
@@ -313,7 +340,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       optional: { label: "Optional", cls: "bg-gray-100 text-gray-400 ring-gray-200" }
     };
     function devStatusBadge(task) {
-      const key = task.jiraKey;
+      const key = task.isLinked ? task.jiraKey : void 0;
       if (!key) return null;
       const status = devStatusMap.value[key];
       if (!status) return null;
@@ -335,6 +362,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const activeRole = ref(null);
     const VIEW_TABS = [
       { id: "qa", label: "QA View" },
+      { id: "priority", label: "Priority Queue" },
       { id: "weekly", label: "Weekly" },
       { id: "today", label: "Today" }
     ];
@@ -394,6 +422,62 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       d.setDate(d.getDate() + 6);
       return d.toISOString().slice(0, 10);
     })();
+    const priorityQueue = computed(() => {
+      const blockerFailed = [];
+      const overdue = [];
+      const dueToday = [];
+      for (const project of projectsStore.projects) {
+        for (const t of tasksStore.getLinked(project.id)) {
+          if (t.isChecked) continue;
+          const ticket = jiraStore.getTicket(t.jiraKey) ?? t.jiraTicket;
+          const due = ticket?.dueDate ?? t.dueDate;
+          const row = {
+            id: t.id,
+            projectId: project.id,
+            projectName: project.name,
+            label: stripMd(t.rawText),
+            jiraKey: t.jiraKey,
+            fileRelativePath: t.fileRelativePath,
+            lineNumber: t.lineNumber,
+            dueDate: due
+          };
+          if (ticket && (ticket.priority === "Blocker" || ticket.status === "FAILED" || ticket.status === "BLOCKED")) {
+            blockerFailed.push(row);
+          } else if (due && due < todayStr && ticket?.status !== "DONE") {
+            overdue.push(row);
+          } else if (due === todayStr) {
+            dueToday.push(row);
+          }
+        }
+        for (const t of tasksStore.getUntracked(project.id)) {
+          if (t.isChecked || t.isIgnoredToday || !t.dueDate) continue;
+          const row = {
+            id: t.id,
+            projectId: project.id,
+            projectName: project.name,
+            label: stripMd(t.rawText),
+            fileRelativePath: t.fileRelativePath,
+            lineNumber: t.lineNumber,
+            dueDate: t.dueDate
+          };
+          if (t.dueDate < todayStr) overdue.push(row);
+          else if (t.dueDate === todayStr) dueToday.push(row);
+        }
+      }
+      return [
+        { id: "blocker-failed", label: "Blocker / Failed", tasks: blockerFailed },
+        { id: "overdue", label: "Overdue", tasks: overdue },
+        { id: "due-today", label: "Due Today", tasks: dueToday }
+      ];
+    });
+    const PRIORITY_SECTION_STYLE = {
+      "blocker-failed": { dot: "🔴", badge: "bg-red-100 text-red-700" },
+      "overdue": { dot: "🟠", badge: "bg-amber-100 text-amber-700" },
+      "due-today": { dot: "🔵", badge: "bg-blue-100 text-blue-700" }
+    };
+    function goToProject(projectId) {
+      router.push({ name: "project", params: { id: projectId } });
+    }
     function toggleCollapse(id) {
       const s = new Set(collapsedCategories.value);
       s.has(id) ? s.delete(id) : s.add(id);
@@ -506,7 +590,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               fileStoryMap.get(storyNum).push(t);
               continue;
             }
-            const jiraKey = t.jiraKey;
+            const jiraKey = t.isLinked ? t.jiraKey : void 0;
             if (jiraKey) {
               if (!jiraTaskMap.has(jiraKey)) jiraTaskMap.set(jiraKey, []);
               jiraTaskMap.get(jiraKey).push(t);
@@ -771,9 +855,37 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             ])
           ]),
           createBaseVNode("div", _hoisted_16, [
-            unref(tasksStore).scanning[activeProjectId.value] ? (openBlock(), createElementBlock("div", _hoisted_17, [
+            viewTab.value === "priority" ? (openBlock(), createElementBlock("div", _hoisted_17, [
+              (openBlock(true), createElementBlock(Fragment, null, renderList(priorityQueue.value, (section) => {
+                return openBlock(), createElementBlock("div", {
+                  key: section.id
+                }, [
+                  createBaseVNode("div", _hoisted_18, [
+                    createBaseVNode("span", _hoisted_19, toDisplayString(PRIORITY_SECTION_STYLE[section.id].dot), 1),
+                    createBaseVNode("span", _hoisted_20, toDisplayString(section.label), 1),
+                    createBaseVNode("span", {
+                      class: normalizeClass(["text-xs rounded-full px-2 py-0.5 font-medium", PRIORITY_SECTION_STYLE[section.id].badge])
+                    }, toDisplayString(section.tasks.length), 3)
+                  ]),
+                  section.tasks.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_21, "— ไม่มีงานในกลุ่มนี้")) : (openBlock(), createElementBlock("div", _hoisted_22, [
+                    (openBlock(true), createElementBlock(Fragment, null, renderList(section.tasks, (row) => {
+                      return openBlock(), createElementBlock("button", {
+                        key: row.id,
+                        class: "w-full flex items-center gap-2 text-left px-3 py-2 rounded-md bg-white hover:bg-slate-50 border border-slate-100 transition-colors",
+                        onClick: ($event) => goToProject(row.projectId)
+                      }, [
+                        row.jiraKey ? (openBlock(), createElementBlock("span", _hoisted_24, toDisplayString(row.jiraKey), 1)) : createCommentVNode("", true),
+                        createBaseVNode("span", _hoisted_25, toDisplayString(row.label), 1),
+                        createBaseVNode("span", _hoisted_26, toDisplayString(row.projectName), 1),
+                        row.dueDate ? (openBlock(), createElementBlock("span", _hoisted_27, toDisplayString(row.dueDate), 1)) : createCommentVNode("", true)
+                      ], 8, _hoisted_23);
+                    }), 128))
+                  ]))
+                ]);
+              }), 128))
+            ])) : unref(tasksStore).scanning[activeProjectId.value] ? (openBlock(), createElementBlock("div", _hoisted_28, [
               createVNode(_sfc_main$3, { size: "md" })
-            ])) : activeUntracked.value.length === 0 && activeLinked.value.length === 0 && !epicHierarchy.value.length ? (openBlock(), createElementBlock("div", _hoisted_18, [..._cache[12] || (_cache[12] = [
+            ])) : activeUntracked.value.length === 0 && activeLinked.value.length === 0 && !epicHierarchy.value.length ? (openBlock(), createElementBlock("div", _hoisted_29, [..._cache[12] || (_cache[12] = [
               createBaseVNode("svg", {
                 class: "w-10 h-10 text-emerald-300",
                 viewBox: "0 0 24 24",
@@ -787,7 +899,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               ], -1),
               createBaseVNode("p", { class: "text-sm font-medium text-slate-600" }, "All tracked", -1),
               createBaseVNode("p", { class: "text-xs text-slate-400" }, "No untracked tasks in this project", -1)
-            ])])) : groupedTasks.value.length === 0 && !epicHierarchy.value.length ? (openBlock(), createElementBlock("div", _hoisted_19, [
+            ])])) : groupedTasks.value.length === 0 && !epicHierarchy.value.length ? (openBlock(), createElementBlock("div", _hoisted_30, [
               _cache[13] || (_cache[13] = createBaseVNode("svg", {
                 class: "w-8 h-8 text-slate-300",
                 viewBox: "0 0 24 24",
@@ -804,19 +916,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   searchQuery.value = "";
                 })
               }, "ล้าง filter")
-            ])) : epicHierarchy.value.length ? (openBlock(), createElementBlock("div", _hoisted_20, [
+            ])) : epicHierarchy.value.length ? (openBlock(), createElementBlock("div", _hoisted_31, [
               (openBlock(true), createElementBlock(Fragment, null, renderList(qaGroups.value, (group) => {
                 return openBlock(), createElementBlock("div", {
                   key: group.id
                 }, [
-                  createBaseVNode("div", _hoisted_21, [
-                    createBaseVNode("span", _hoisted_22, toDisplayString(group.dot), 1),
+                  createBaseVNode("div", _hoisted_32, [
+                    createBaseVNode("span", _hoisted_33, toDisplayString(group.dot), 1),
                     createBaseVNode("span", {
                       class: normalizeClass(["text-sm font-semibold", group.color])
                     }, toDisplayString(group.label), 3),
-                    createBaseVNode("span", _hoisted_23, toDisplayString(group.stories.length), 1)
+                    createBaseVNode("span", _hoisted_34, toDisplayString(group.stories.length), 1)
                   ]),
-                  createBaseVNode("table", _hoisted_24, [
+                  createBaseVNode("table", _hoisted_35, [
                     _cache[15] || (_cache[15] = createBaseVNode("thead", null, [
                       createBaseVNode("tr", { class: "border-b border-slate-100 text-left text-[10px] text-slate-400 uppercase tracking-wide" }, [
                         createBaseVNode("th", { class: "px-3 pb-1.5 w-16" }, "Epic"),
@@ -837,38 +949,38 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           key: row.epicLabel + row.storyLabel,
                           class: "border-b border-slate-50 hover:bg-slate-50"
                         }, [
-                          createBaseVNode("td", _hoisted_25, [
-                            createBaseVNode("span", _hoisted_26, toDisplayString(row.epicLabel), 1)
+                          createBaseVNode("td", _hoisted_36, [
+                            createBaseVNode("span", _hoisted_37, toDisplayString(row.epicLabel), 1)
                           ]),
-                          createBaseVNode("td", _hoisted_27, [
-                            createBaseVNode("span", _hoisted_28, toDisplayString(row.storyLabel), 1)
+                          createBaseVNode("td", _hoisted_38, [
+                            createBaseVNode("span", _hoisted_39, toDisplayString(row.storyLabel), 1)
                           ]),
-                          createBaseVNode("td", _hoisted_29, [
+                          createBaseVNode("td", _hoisted_40, [
                             row.devStatus && DEV_STATUS_BADGE[row.devStatus] ? (openBlock(), createElementBlock("span", {
                               key: 0,
                               class: normalizeClass(["inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1", DEV_STATUS_BADGE[row.devStatus].cls])
-                            }, toDisplayString(DEV_STATUS_BADGE[row.devStatus].label), 3)) : (openBlock(), createElementBlock("span", _hoisted_30, "—"))
+                            }, toDisplayString(DEV_STATUS_BADGE[row.devStatus].label), 3)) : (openBlock(), createElementBlock("span", _hoisted_41, "—"))
                           ]),
-                          createBaseVNode("td", _hoisted_31, [
-                            row.hasAPI ? (openBlock(), createElementBlock("span", _hoisted_32, "✓")) : (openBlock(), createElementBlock("span", _hoisted_33, "—"))
+                          createBaseVNode("td", _hoisted_42, [
+                            row.hasAPI ? (openBlock(), createElementBlock("span", _hoisted_43, "✓")) : (openBlock(), createElementBlock("span", _hoisted_44, "—"))
                           ]),
-                          createBaseVNode("td", _hoisted_34, [
-                            row.hasIntegration ? (openBlock(), createElementBlock("span", _hoisted_35, "✓")) : (openBlock(), createElementBlock("span", _hoisted_36, "—"))
+                          createBaseVNode("td", _hoisted_45, [
+                            row.hasIntegration ? (openBlock(), createElementBlock("span", _hoisted_46, "✓")) : (openBlock(), createElementBlock("span", _hoisted_47, "—"))
                           ]),
-                          createBaseVNode("td", _hoisted_37, [
-                            row.hasUI ? (openBlock(), createElementBlock("span", _hoisted_38, "✓")) : (openBlock(), createElementBlock("span", _hoisted_39, "—"))
+                          createBaseVNode("td", _hoisted_48, [
+                            row.hasUI ? (openBlock(), createElementBlock("span", _hoisted_49, "✓")) : (openBlock(), createElementBlock("span", _hoisted_50, "—"))
                           ]),
-                          createBaseVNode("td", _hoisted_40, [
-                            row.hasE2E ? (openBlock(), createElementBlock("span", _hoisted_41, "✓")) : (openBlock(), createElementBlock("span", _hoisted_42, "—"))
+                          createBaseVNode("td", _hoisted_51, [
+                            row.hasE2E ? (openBlock(), createElementBlock("span", _hoisted_52, "✓")) : (openBlock(), createElementBlock("span", _hoisted_53, "—"))
                           ]),
-                          createBaseVNode("td", _hoisted_43, [
-                            row.hasScript ? (openBlock(), createElementBlock("span", _hoisted_44, "✓")) : (openBlock(), createElementBlock("span", _hoisted_45, "—"))
+                          createBaseVNode("td", _hoisted_54, [
+                            row.hasScript ? (openBlock(), createElementBlock("span", _hoisted_55, "✓")) : (openBlock(), createElementBlock("span", _hoisted_56, "—"))
                           ]),
-                          createBaseVNode("td", _hoisted_46, [
-                            row.dueDate ? (openBlock(), createElementBlock("span", _hoisted_47, toDisplayString(row.dueDate), 1)) : (openBlock(), createElementBlock("span", _hoisted_48, "—"))
+                          createBaseVNode("td", _hoisted_57, [
+                            row.dueDate ? (openBlock(), createElementBlock("span", _hoisted_58, toDisplayString(row.dueDate), 1)) : (openBlock(), createElementBlock("span", _hoisted_59, "—"))
                           ]),
-                          createBaseVNode("td", _hoisted_49, [
-                            createBaseVNode("span", _hoisted_50, toDisplayString(row.updatedDate ?? row.gitDate ?? "—"), 1)
+                          createBaseVNode("td", _hoisted_60, [
+                            createBaseVNode("span", _hoisted_61, toDisplayString(row.updatedDate ?? row.gitDate ?? "—"), 1)
                           ])
                         ]);
                       }), 128))
@@ -876,8 +988,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   ])
                 ]);
               }), 128))
-            ])) : (openBlock(), createElementBlock("div", _hoisted_51, [
-              createBaseVNode("table", _hoisted_52, [
+            ])) : (openBlock(), createElementBlock("div", _hoisted_62, [
+              createBaseVNode("table", _hoisted_63, [
                 _cache[21] || (_cache[21] = createBaseVNode("thead", null, [
                   createBaseVNode("tr", { class: "border-b border-slate-100 bg-white sticky top-0 z-10" }, [
                     createBaseVNode("th", { class: "text-left px-6 py-2.5 text-xs font-semibold text-slate-500 w-[400px] max-w-[400px]" }, "Task"),
@@ -897,8 +1009,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         class: "bg-indigo-50 border-y border-indigo-100 cursor-pointer hover:bg-indigo-100 transition-colors select-none",
                         onClick: ($event) => toggleCollapse("epic:" + epicGroup.epic)
                       }, [
-                        createBaseVNode("td", _hoisted_54, [
-                          createBaseVNode("div", _hoisted_55, [
+                        createBaseVNode("td", _hoisted_65, [
+                          createBaseVNode("div", _hoisted_66, [
                             (openBlock(), createElementBlock("svg", {
                               class: normalizeClass(["w-3 h-3 text-indigo-400 flex-shrink-0 transition-transform mt-0.5", collapsedCategories.value.has("epic:" + epicGroup.epic) ? "-rotate-90" : ""]),
                               viewBox: "0 0 12 12",
@@ -906,31 +1018,31 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             }, [..._cache[16] || (_cache[16] = [
                               createBaseVNode("path", { d: "M6 8.5 1.5 4h9L6 8.5Z" }, null, -1)
                             ])], 2)),
-                            createBaseVNode("span", _hoisted_56, toDisplayString(viewTab.value === "weekly" ? epicGroup.epic : epicBadgeLabel(epicGroup.epic)), 1),
-                            createBaseVNode("div", _hoisted_57, [
-                              createBaseVNode("div", _hoisted_58, [
-                                createBaseVNode("span", _hoisted_59, toDisplayString(epicGroup.epic), 1),
+                            createBaseVNode("span", _hoisted_67, toDisplayString(viewTab.value === "weekly" ? epicGroup.epic : epicBadgeLabel(epicGroup.epic)), 1),
+                            createBaseVNode("div", _hoisted_68, [
+                              createBaseVNode("div", _hoisted_69, [
+                                createBaseVNode("span", _hoisted_70, toDisplayString(epicGroup.epic), 1),
                                 epicGroup.epicStatus || epicDevSlug(epicGroup.epic) && devStatusMap.value[epicDevSlug(epicGroup.epic)] ? (openBlock(), createElementBlock("span", {
                                   key: 0,
                                   class: normalizeClass(["inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium ring-1", (DEV_STATUS_BADGE[epicGroup.epicStatus ?? devStatusMap.value[epicDevSlug(epicGroup.epic)]] ?? { cls: "bg-slate-100 text-slate-400 ring-slate-200" }).cls])
                                 }, toDisplayString((DEV_STATUS_BADGE[epicGroup.epicStatus ?? devStatusMap.value[epicDevSlug(epicGroup.epic)]] ?? { label: epicGroup.epicStatus ?? devStatusMap.value[epicDevSlug(epicGroup.epic)] }).label), 3)) : createCommentVNode("", true)
                               ]),
-                              createBaseVNode("div", _hoisted_60, [
+                              createBaseVNode("div", _hoisted_71, [
                                 (openBlock(true), createElementBlock(Fragment, null, renderList(epicGroup.sections, (sec) => {
                                   return openBlock(), createElementBlock("span", {
                                     key: sec.section,
                                     class: "inline-flex items-center gap-1 text-xs text-indigo-500 bg-white border border-indigo-100 rounded px-1.5 py-0.5 leading-none"
                                   }, [
                                     createTextVNode(toDisplayString(sec.section === "—" ? "(ไม่มีหมวด)" : sec.section) + " ", 1),
-                                    createBaseVNode("span", _hoisted_61, toDisplayString(sec.tasks.length), 1)
+                                    createBaseVNode("span", _hoisted_72, toDisplayString(sec.tasks.length), 1)
                                   ]);
                                 }), 128))
                               ])
                             ]),
-                            createBaseVNode("span", _hoisted_62, toDisplayString(epicGroup.total) + " items", 1)
+                            createBaseVNode("span", _hoisted_73, toDisplayString(epicGroup.total) + " items", 1)
                           ])
                         ])
-                      ], 8, _hoisted_53),
+                      ], 8, _hoisted_64),
                       !collapsedCategories.value.has("epic:" + epicGroup.epic) ? (openBlock(true), createElementBlock(Fragment, { key: 0 }, renderList(epicGroup.sections, (secGroup) => {
                         return openBlock(), createElementBlock(Fragment, {
                           key: epicGroup.epic + ":" + secGroup.section
@@ -939,8 +1051,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             class: normalizeClass(["bg-slate-50 border-y border-slate-100 transition-colors select-none", secGroup.tasks.length > 0 ? "cursor-pointer hover:bg-slate-100" : ""]),
                             onClick: ($event) => secGroup.tasks.length > 0 && toggleCollapse(epicGroup.epic + ":" + secGroup.section)
                           }, [
-                            createBaseVNode("td", _hoisted_64, [
-                              createBaseVNode("div", _hoisted_65, [
+                            createBaseVNode("td", _hoisted_75, [
+                              createBaseVNode("div", _hoisted_76, [
                                 secGroup.tasks.length > 0 ? (openBlock(), createElementBlock("svg", {
                                   key: 0,
                                   class: normalizeClass(["w-2.5 h-2.5 text-slate-400 flex-shrink-0 transition-transform", collapsedCategories.value.has(epicGroup.epic + ":" + secGroup.section) ? "-rotate-90" : ""]),
@@ -948,78 +1060,78 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                   fill: "currentColor"
                                 }, [..._cache[17] || (_cache[17] = [
                                   createBaseVNode("path", { d: "M6 8.5 1.5 4h9L6 8.5Z" }, null, -1)
-                                ])], 2)) : (openBlock(), createElementBlock("span", _hoisted_66)),
-                                createBaseVNode("span", _hoisted_67, toDisplayString(secGroup.section), 1),
+                                ])], 2)) : (openBlock(), createElementBlock("span", _hoisted_77)),
+                                createBaseVNode("span", _hoisted_78, toDisplayString(secGroup.section), 1),
                                 secGroup.storyStatus && DEV_STATUS_BADGE[secGroup.storyStatus] ? (openBlock(), createElementBlock("span", {
                                   key: 2,
                                   class: normalizeClass(["inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium ring-1", DEV_STATUS_BADGE[secGroup.storyStatus].cls])
                                 }, " Dev " + toDisplayString(DEV_STATUS_BADGE[secGroup.storyStatus].label), 3)) : createCommentVNode("", true),
-                                secGroup.hasTC ? (openBlock(), createElementBlock("span", _hoisted_68, "TC")) : createCommentVNode("", true),
-                                secGroup.hasE2E ? (openBlock(), createElementBlock("span", _hoisted_69, "E2E")) : createCommentVNode("", true),
-                                createBaseVNode("span", _hoisted_70, toDisplayString(secGroup.tasks.length), 1)
+                                secGroup.hasTC ? (openBlock(), createElementBlock("span", _hoisted_79, "TC")) : createCommentVNode("", true),
+                                secGroup.hasE2E ? (openBlock(), createElementBlock("span", _hoisted_80, "E2E")) : createCommentVNode("", true),
+                                createBaseVNode("span", _hoisted_81, toDisplayString(secGroup.tasks.length), 1)
                               ])
                             ])
-                          ], 10, _hoisted_63),
+                          ], 10, _hoisted_74),
                           secGroup.tasks.length > 0 && !collapsedCategories.value.has(epicGroup.epic + ":" + secGroup.section) ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
                             createCommentVNode("", true),
                             (openBlock(true), createElementBlock(Fragment, null, renderList(secGroup.tasks, (task) => {
                               return openBlock(), createElementBlock("tr", {
                                 key: task.id,
-                                class: normalizeClass(["bg-white hover:bg-slate-50 transition-colors border-b border-slate-50", task.isIgnoredToday ? "opacity-40" : ""])
+                                class: normalizeClass(["bg-white hover:bg-slate-50 transition-colors border-b border-slate-50", !task.isLinked && task.isIgnoredToday ? "opacity-40" : ""])
                               }, [
-                                createBaseVNode("td", _hoisted_72, [
-                                  createBaseVNode("div", _hoisted_73, [
+                                createBaseVNode("td", _hoisted_83, [
+                                  createBaseVNode("div", _hoisted_84, [
                                     createBaseVNode("button", {
                                       class: "flex-shrink-0 hover:scale-110 transition-transform",
                                       onClick: withModifiers(($event) => unref(tasksStore).toggleTask(task.id, activeProjectId.value, !task.isChecked), ["stop"])
                                     }, [
-                                      task.isChecked ? (openBlock(), createElementBlock("svg", _hoisted_75, [..._cache[19] || (_cache[19] = [
+                                      task.isChecked ? (openBlock(), createElementBlock("svg", _hoisted_86, [..._cache[19] || (_cache[19] = [
                                         createBaseVNode("path", { d: "M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0Z" }, null, -1),
                                         createBaseVNode("path", {
                                           "fill-rule": "evenodd",
                                           d: "M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Z",
                                           "clip-rule": "evenodd"
                                         }, null, -1)
-                                      ])])) : (openBlock(), createElementBlock("svg", _hoisted_76, [..._cache[20] || (_cache[20] = [
+                                      ])])) : (openBlock(), createElementBlock("svg", _hoisted_87, [..._cache[20] || (_cache[20] = [
                                         createBaseVNode("path", {
                                           "fill-rule": "evenodd",
                                           d: "M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Z",
                                           "clip-rule": "evenodd"
                                         }, null, -1)
                                       ])]))
-                                    ], 8, _hoisted_74),
-                                    task.isLinked ? (openBlock(), createElementBlock("span", _hoisted_77, toDisplayString(task.jiraKey), 1)) : createCommentVNode("", true),
-                                    createBaseVNode("div", _hoisted_78, [
+                                    ], 8, _hoisted_85),
+                                    task.isLinked ? (openBlock(), createElementBlock("span", _hoisted_88, toDisplayString(task.isLinked ? task.jiraKey : ""), 1)) : createCommentVNode("", true),
+                                    createBaseVNode("div", _hoisted_89, [
                                       createBaseVNode("span", {
                                         class: normalizeClass(["line-clamp-2 text-xs leading-relaxed", task.isChecked ? "line-through text-slate-400" : "text-slate-700"])
                                       }, toDisplayString(stripMd(task.rawText)), 3),
-                                      createBaseVNode("span", _hoisted_79, toDisplayString(task.fileRelativePath) + ":" + toDisplayString(task.lineNumber), 1)
+                                      createBaseVNode("span", _hoisted_90, toDisplayString(task.fileRelativePath) + ":" + toDisplayString(task.lineNumber), 1)
                                     ]),
-                                    extractRole(task.rawText) === "QA" ? (openBlock(), createElementBlock("span", _hoisted_80, "QA")) : extractRole(task.rawText) === "DEV" ? (openBlock(), createElementBlock("span", _hoisted_81, "DEV")) : createCommentVNode("", true)
+                                    extractRole(task.rawText) === "QA" ? (openBlock(), createElementBlock("span", _hoisted_91, "QA")) : extractRole(task.rawText) === "DEV" ? (openBlock(), createElementBlock("span", _hoisted_92, "DEV")) : createCommentVNode("", true)
                                   ])
                                 ]),
-                                createBaseVNode("td", _hoisted_82, [
+                                createBaseVNode("td", _hoisted_93, [
                                   classifyTask(task.rawText) ? (openBlock(), createElementBlock("span", {
                                     key: 0,
                                     class: normalizeClass([
                                       "inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium ring-1",
                                       QA_CATEGORIES.find((c) => c.id === classifyTask(task.rawText))?.badge ?? ""
                                     ])
-                                  }, toDisplayString(QA_CATEGORIES.find((c) => c.id === classifyTask(task.rawText))?.label), 3)) : (openBlock(), createElementBlock("span", _hoisted_83, "—"))
+                                  }, toDisplayString(QA_CATEGORIES.find((c) => c.id === classifyTask(task.rawText))?.label), 3)) : (openBlock(), createElementBlock("span", _hoisted_94, "—"))
                                 ]),
-                                createBaseVNode("td", _hoisted_84, [
-                                  task.sprint ? (openBlock(), createElementBlock("span", _hoisted_85, toDisplayString(task.sprint), 1)) : (openBlock(), createElementBlock("span", _hoisted_86, "—"))
+                                createBaseVNode("td", _hoisted_95, [
+                                  task.sprint ? (openBlock(), createElementBlock("span", _hoisted_96, toDisplayString(task.sprint), 1)) : (openBlock(), createElementBlock("span", _hoisted_97, "—"))
                                 ]),
-                                createBaseVNode("td", _hoisted_87, [
-                                  task.dueDate ? (openBlock(), createElementBlock("span", _hoisted_88, toDisplayString(task.dueDate), 1)) : (openBlock(), createElementBlock("span", _hoisted_89, "—"))
+                                createBaseVNode("td", _hoisted_98, [
+                                  task.dueDate ? (openBlock(), createElementBlock("span", _hoisted_99, toDisplayString(task.dueDate), 1)) : (openBlock(), createElementBlock("span", _hoisted_100, "—"))
                                 ]),
-                                createBaseVNode("td", _hoisted_90, [
+                                createBaseVNode("td", _hoisted_101, [
                                   devStatusBadge(task) ? (openBlock(), createElementBlock("span", {
                                     key: 0,
                                     class: normalizeClass(["inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1", devStatusBadge(task).cls])
-                                  }, toDisplayString(devStatusBadge(task).label), 3)) : (openBlock(), createElementBlock("span", _hoisted_91, "—"))
+                                  }, toDisplayString(devStatusBadge(task).label), 3)) : (openBlock(), createElementBlock("span", _hoisted_102, "—"))
                                 ]),
-                                createBaseVNode("td", _hoisted_92, [
+                                createBaseVNode("td", _hoisted_103, [
                                   createBaseVNode("span", {
                                     class: normalizeClass(["inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1", qaWorkBadge(task).cls])
                                   }, toDisplayString(qaWorkBadge(task).label), 3)

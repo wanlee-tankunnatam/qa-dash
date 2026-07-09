@@ -37,7 +37,7 @@
 
 | รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
 |---|---|---|
-| AC-003-01 | Ignore task ทำให้ task หายจาก active untracked list วันนี้ | Integration: task ไม่อยู่ใน results หลัง ignore |
+| AC-003-01 | Ignore task ทำให้ task ถูก exclude จาก active untracked **count** วันนี้ (`untrackedCount` ไม่นับ) และแสดงแบบหรี่ (de-emphasized) ใน list — ไม่ถูกลบออกจากมุมมอง | Integration: `untrackedCount` ลดลง + task แสดง dimmed หลัง ignore |
 | AC-003-02 | Task ที่ Ignore ถูกเก็บใน electron-store ภายใต้ key วันที่วันนี้ | Unit: store key assertion |
 | AC-003-03 | เที่ยงคืนถัดไป task ที่เคย Ignore ปรากฏใหม่ | Unit: simulate date change |
 | AC-003-04 | Un-ignore task ทำให้ task ปรากฏใหม่ทันที | Integration: task กลับมาใน list หลัง unignore |
@@ -58,15 +58,20 @@
 
 ---
 
-## AC-005: การแสดง Priority
+## AC-005: การแสดง Priority Queue (US-008)
+
+> **Precedence rule (บังคับ):** แต่ละ task ถูกจัดเข้า **section แรกสุดที่เข้าเกณฑ์เท่านั้น** ตามลำดับ Blocker/Failed → Overdue → Due Today เพื่อไม่ให้นับซ้ำข้าม section (mutually exclusive)
+> **Data source:** section "Blocker/Failed" ใช้ได้เฉพาะ `LinkedTask` (ต้องมี Jira `priority`/`status`); section "Overdue"/"Due Today" ใช้ `dueDate` ได้ทั้ง `LinkedTask` และ `UntrackedTask` — *(รอ PA ยืนยัน ดู [BA→PA] flag)*
 
 | รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
 |---|---|---|
-| AC-005-01 | Dashboard priority order: Blocker/Failed → Overdue → Due Today | UI: visual order ตรงกับเกณฑ์ |
-| AC-005-02 | Priority "Blocker" หรือ status "FAILED"/"BLOCKED" → อยู่ section แรก | Unit: classifier test |
-| AC-005-03 | Due date < วันนี้ → section "Overdue" | Unit: date comparison test |
-| AC-005-04 | Due date = วันนี้ → section "Due Today" | Unit: date comparison test |
-| AC-005-05 | แต่ละ priority section แสดง count badge | UI: badge แสดงตัวเลขที่ถูกต้อง |
+| AC-005-01 | Dashboard แสดง 3 section เรียงบน→ล่างเสมอ: (1) Blocker/Failed (2) Overdue (3) Due Today — ลำดับคงที่ ไม่ขึ้นกับข้อมูล | UI: visual order assertion |
+| AC-005-02 | Task เข้า section "Blocker/Failed" เมื่อ linked ticket มี `priority === 'Blocker'` **หรือ** `status === 'FAILED'` **หรือ** `status === 'BLOCKED'` | Unit: classifier test |
+| AC-005-03 | Task เข้า section "Overdue" เมื่อ `dueDate < todayISO` **และ** `status !== 'DONE'` **และ** ไม่เข้าเกณฑ์ Blocker/Failed | Unit: date + precedence test |
+| AC-005-04 | Task เข้า section "Due Today" เมื่อ `dueDate === todayISO` **และ** ไม่เข้าเกณฑ์ Blocker/Failed หรือ Overdue | Unit: date + precedence test |
+| AC-005-05 | แต่ละ section แสดง count badge = จำนวน task ใน section นั้น (mutually exclusive ไม่นับซ้ำ) | UI: badge number assertion |
+| AC-005-06 | คลิก task ในคิว → navigate ไปหน้า Project (`/project/:id`) ของ task นั้น | UI: click → route assertion |
+| AC-005-07 | Section ที่ไม่มี task → แสดง count badge `0` (ไม่ซ่อน header) เพื่อคง visual order คงที่ตาม AC-005-01 | UI: empty-section behavior |
 
 ---
 
@@ -146,6 +151,74 @@
 | AC-011-04 | US-017 | เวลา 09:10 แต่แอปปิดอยู่ (BrowserWindow ถูก destroy หรือไม่มี instance) | ไม่มีการกระทำใดๆ เกิดขึ้น ไม่มีการ launch แอปใหม่ | Integration: BrowserWindow.getAllWindows() คืน [], assert ไม่มี window launch call |
 | AC-011-05 | US-017 | เวลา 09:10 แต่เป็นวันเสาร์หรืออาทิตย์ | Cron job ไม่ trigger ไม่มีการเรียก focus()/show() | Unit: cron pattern ไม่ครอบคลุมวัน 0 และ 6 |
 | AC-011-06 | US-017 | Window focus เกิดขึ้น (ทุก happy path) | ไม่มีการเปลี่ยน route, ไม่มี dialog ยืนยัน และไม่ใช้ macOS Notification Center | Code review: ไม่มี `router.push`, `dialog.show`, `Notification` ใน window-focus handler |
+
+---
+
+## AC-012: AI Gap Check เอกสาร Requirement (US-018)
+
+> **Scope:** MVP 1.4 (Epic 9) — Freeze gate: ห้าม implement จน MVP 1.3 ship + QA sign-off
+
+| รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
+|---|---|---|
+| AC-012-01 | ปุ่ม "Gap Check with AI" ปรากฏบน TaskRow และหัวไฟล์ `.md` ในหน้า Project | UI: ปุ่ม render บน task/file row |
+| AC-012-02 | Gap Check เรียกผ่าน IPC `ai:gap-check` — AI call ทำจาก main process เท่านั้น | Code review: ไม่มี Anthropic SDK import ใน renderer |
+| AC-012-03 | Prompt รวม context: เนื้อหาไฟล์ `.md` (บรรทัดรอบข้าง ±N), fileRelativePath, project name | Integration: prompt content assertion |
+| AC-012-04 | Response เป็น JSON โครงสร้าง `{ missingAcceptanceCriteria: string[], missingEdgeCases: string[], missingValidationRules: string[] }` | Unit: response parse assertion |
+| AC-012-05 | ผลลัพธ์แสดงแยก 3 หมวดใน UI (Missing AC / Edge Cases / Validation) | UI: 3 sections render จาก response |
+| AC-012-06 | Gap Check **ไม่** แก้ไขไฟล์ `.md` | Integration: file content ไม่เปลี่ยนแปลงหลังเรียก |
+| AC-012-07 | Gap Check **ไม่** เรียก Jira API และ **ไม่** เปลี่ยนสถานะ task | Integration: ไม่มี Jira API call ระหว่าง gap check |
+| AC-012-08 | Model ที่ใช้คือ `claude-sonnet-4-6` (constant เดียวกับ AC-007-08) | Unit: constant assertion |
+| AC-012-09 | กรณี response ไม่ใช่ JSON ที่ valid → แสดง error banner ไม่ crash | Integration: malformed response path |
+
+---
+
+## AC-013: AI ร่าง Test Case (US-019)
+
+> **Scope:** MVP 1.4 (Epic 9) — Freeze gate เช่นเดียวกับ AC-012
+
+| รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
+|---|---|---|
+| AC-013-01 | ปุ่ม "Draft Test Cases with AI" ปรากฏบน TaskRow และหัวไฟล์ `.md` | UI: ปุ่ม render |
+| AC-013-02 | เรียกผ่าน IPC `ai:draft-test-cases` — non-streaming, AI call จาก main process เท่านั้น | Code review: main-process only |
+| AC-013-03 | Response เป็น JSON array ของ `TestCaseDraft` — แต่ละเคสมี `scenario`, `testData`, `expectedResult`, `type` | Unit: response parse + shape assertion |
+| AC-013-04 | `type` รับค่าจาก enum: `'Boundary' \| 'E2E' \| 'Edge' \| 'Functional'` | Unit: enum validation |
+| AC-013-05 | ทุก field ของทุกเคสแก้ไขได้ก่อน copy (ไม่ readonly) | UI: editable inputs |
+| AC-013-06 | ปุ่ม "Copy" คัดลอก test cases เป็น Markdown/plain text ไป clipboard | UI: clipboard content ตรง expected |
+| AC-013-07 | **ไม่มีปุ่ม** submit/push ไป Jira หรือ test tool ใดๆ — copy-out เท่านั้น | Code review: grep หา submit/push |
+| AC-013-08 | มีข้อความเตือน "Test case เหล่านี้เป็นเพียงร่าง — ตรวจสอบก่อนใช้งานจริง" ในหน้า review | UI: warning text มองเห็น |
+| AC-013-09 | Test case draft เก็บใน electron-store ภายใต้ source task ID (ไว้ให้ Coverage View อ้าง) | Unit: store key assertion |
+| AC-013-10 | การ Copy **ไม่** เรียก Jira API และ **ไม่** mark task เป็น handled | Integration: ไม่มี side effect หลัง copy |
+
+---
+
+## AC-014: Coverage View (US-020)
+
+> **Scope:** MVP 1.4 (Epic 9) — Freeze gate เช่นเดียวกับ AC-012
+
+| รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
+|---|---|---|
+| AC-014-01 | Coverage View ใช้ข้อมูลจาก scan (US-004) และ Jira (US-007) เดิม — ไม่มี data source ใหม่ | Code review: ไม่มี fetch/scan เพิ่ม |
+| AC-014-02 | LinkedTask ที่มี test case draft (จาก AC-013-09) → สถานะ "Has Coverage" | Unit: coverage classifier test |
+| AC-014-03 | LinkedTask ที่ไม่มี test case draft → สถานะ "No Coverage" | Unit: coverage classifier test |
+| AC-014-04 | UntrackedTask ทั้งหมด → "No Coverage" โดยปริยาย | Unit: default coverage assertion |
+| AC-014-05 | Coverage View เป็น read-only — ไม่มี action ที่แก้ไขข้อมูล | Code review: ไม่มี mutation ใน view |
+| AC-014-06 | มี filter "แสดงเฉพาะ No Coverage" (optional) | UI: filter toggle ทำงานถูกต้อง |
+| AC-014-07 | Coverage computed แบบ derive จาก store — ไม่ persist สถานะ coverage แยก | Unit: ไม่มี store key ใหม่สำหรับ coverage |
+
+---
+
+## AC-015: Start My Day แบบ Analysis Report (US-021)
+
+> **Scope:** MVP 1.4 (Epic 9) — ต่อยอด AC-007 (US-010) — Freeze gate เช่นเดียวกับ AC-012
+
+| รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
+|---|---|---|
+| AC-015-01 | ใช้ปุ่ม "Start My Day" และ IPC `ai:start-my-day` เดิม — ไม่เพิ่ม flow/channel ใหม่ | Code review: reuse channel เดิม |
+| AC-015-02 | Prompt เพิ่มคำสั่งให้สรุป 3 ส่วนใหม่: Top Risks, Common Patterns, Suggested Fix Order | Integration: prompt content assertion |
+| AC-015-03 | Response ยังคงแสดงแบบ streaming (chunks ทีละส่วน) เหมือน AC-007-04 | Integration: onStreamChunk fires หลายครั้ง |
+| AC-015-04 | ส่วนเดิมของ US-010 (Critical ก่อนเที่ยง / Standup / Clear Untracked) ยังแสดงครบ | Integration: backward-compat assertion |
+| AC-015-05 | วิเคราะห์จากข้อมูลที่ระบบสรุปให้เท่านั้น — ไม่มีข้อมูลผลรันเทสจริง | Code review: prompt ไม่อ้าง execution result |
+| AC-015-06 | Model ที่ใช้คือ `claude-sonnet-4-6` | Unit: constant assertion |
 
 ---
 

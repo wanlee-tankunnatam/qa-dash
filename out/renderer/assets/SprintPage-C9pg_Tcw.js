@@ -1,5 +1,5 @@
-import { d as defineComponent, u as useProjectsStore, B as useJiraStore, w as watch, o as onMounted, b as openBlock, c as createElementBlock, e as createBaseVNode, t as toDisplayString, s as createCommentVNode, F as Fragment, j as renderList, z as unref, g as createBlock, C as createStaticVNode, r as ref, x as computed, n as normalizeClass, f as createTextVNode, h as createVNode, J as h } from "./index-DKW7vBme.js";
-import { _ as _sfc_main$1 } from "./LoadingSpinner.vue_vue_type_script_setup_true_lang-DLc3VGCp.js";
+import { d as defineComponent, u as useProjectsStore, B as useJiraStore, w as watch, o as onMounted, b as openBlock, c as createElementBlock, e as createBaseVNode, t as toDisplayString, s as createCommentVNode, F as Fragment, j as renderList, z as unref, g as createBlock, C as createStaticVNode, r as ref, x as computed, n as normalizeClass, f as createTextVNode, h as createVNode, J as h } from "./index-Bq_91m8v.js";
+import { _ as _sfc_main$1 } from "./LoadingSpinner.vue_vue_type_script_setup_true_lang-BGG7VSfd.js";
 const _hoisted_1 = { class: "flex flex-col h-full bg-slate-50" };
 const _hoisted_2 = { class: "flex flex-col gap-0 bg-white border-b border-slate-100" };
 const _hoisted_3 = { class: "flex items-center justify-between px-6 pt-4 pb-2" };

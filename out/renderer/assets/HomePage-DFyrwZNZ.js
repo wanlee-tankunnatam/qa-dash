@@ -1,5 +1,5 @@
-import { d as defineComponent, u as useProjectsStore, a as useTasksStore, r as ref, w as watch, o as onMounted, b as openBlock, c as createElementBlock, e as createBaseVNode, t as toDisplayString, n as normalizeClass, f as createTextVNode, g as createBlock, h as createVNode, i as withCtx, F as Fragment, j as renderList, k as normalizeStyle, l as withModifiers, m as withDirectives, v as vModelSelect, p as vModelText, q as withKeys, s as createCommentVNode, x as computed, y as resolveComponent, z as unref } from "./index-DKW7vBme.js";
-import { _ as _sfc_main$1 } from "./LoadingSpinner.vue_vue_type_script_setup_true_lang-DLc3VGCp.js";
+import { d as defineComponent, u as useProjectsStore, a as useTasksStore, r as ref, w as watch, o as onMounted, b as openBlock, c as createElementBlock, e as createBaseVNode, t as toDisplayString, n as normalizeClass, f as createTextVNode, g as createBlock, h as createVNode, i as withCtx, F as Fragment, j as renderList, k as normalizeStyle, l as withModifiers, m as withDirectives, v as vModelSelect, p as vModelText, q as withKeys, s as createCommentVNode, x as computed, y as resolveComponent, z as unref } from "./index-Bq_91m8v.js";
+import { _ as _sfc_main$1 } from "./LoadingSpinner.vue_vue_type_script_setup_true_lang-BGG7VSfd.js";
 const _hoisted_1 = { class: "flex flex-col h-full bg-white" };
 const _hoisted_2 = { class: "flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200" };
 const _hoisted_3 = { class: "text-xs text-slate-400 mt-0.5" };

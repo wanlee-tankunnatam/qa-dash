@@ -1,4 +1,4 @@
-import { d as defineComponent, b as openBlock, c as createElementBlock, n as normalizeClass, x as computed } from "./index-DKW7vBme.js";
+import { d as defineComponent, b as openBlock, c as createElementBlock, n as normalizeClass, x as computed } from "./index-Bq_91m8v.js";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "LoadingSpinner",
   props: {

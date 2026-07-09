@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./HomePage-CYxhlYgr.js","./LoadingSpinner.vue_vue_type_script_setup_true_lang-DLc3VGCp.js","./DashboardPage-CwtNg2T5.js","./ErrorMessage.vue_vue_type_script_setup_true_lang-BncxwQo5.js","./ProjectPage-B6qGdrxH.js","./draft-B0amErFC.js","./DraftReviewPage-k_K1FC3o.js","./SprintPage-O8lPJj2D.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./HomePage-DFyrwZNZ.js","./LoadingSpinner.vue_vue_type_script_setup_true_lang-BGG7VSfd.js","./DashboardPage-R8n_ItfV.js","./ErrorMessage.vue_vue_type_script_setup_true_lang-DfzIRCNA.js","./ProjectPage-BH9ysF61.js","./draft-CU4AYu-k.js","./DraftReviewPage-DpWzE94X.js","./SprintPage-C9pg_Tcw.js"])))=>i.map(i=>d[i]);
 /**
 * @vue/shared v3.5.39
 * (c) 2018-present Yuxi (Evan) You and Vue contributors
@@ -9846,6 +9846,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     const route = useRoute();
+    const projectsStore = useProjectsStore();
+    const tasksStore = useTasksStore();
     const PAGE_LABELS = {
       home: "หน้าแรก (ตารางงานรายวัน)",
       dashboard: "Dashboard",
@@ -9884,8 +9886,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     let cleanupSync = null;
     let cleanupDangerZone = null;
     onMounted(() => {
-      cleanupSync = window.qaApi.onSyncCompleted((summary) => {
-        console.log("[App] sync completed", summary);
+      cleanupSync = window.qaApi.onSyncCompleted(async (summary) => {
+        await projectsStore.fetchProjects();
+        await Promise.all(projectsStore.projects.map((p2) => tasksStore.scanProject(p2.id)));
       });
       cleanupDangerZone = window.qaApi.onDangerZoneTriggered((projectId) => {
         console.log("[App] danger zone triggered for", projectId);
@@ -9972,7 +9975,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-e36c6b16"]]);
+const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-538cc092"]]);
 const scriptRel = /* @__PURE__ */ (function detectScriptRel() {
   const relList = typeof document !== "undefined" && document.createElement("link").relList;
   return relList && relList.supports && relList.supports("modulepreload") ? "modulepreload" : "preload";
@@ -10062,61 +10065,61 @@ const routes = [
   {
     path: "/",
     name: "home",
-    component: () => __vitePreload(() => import("./HomePage-CYxhlYgr.js"), true ? __vite__mapDeps([0,1]) : void 0, import.meta.url)
+    component: () => __vitePreload(() => import("./HomePage-DFyrwZNZ.js"), true ? __vite__mapDeps([0,1]) : void 0, import.meta.url)
   },
   {
     path: "/qa",
     name: "dashboard",
-    component: () => __vitePreload(() => import("./DashboardPage-CwtNg2T5.js"), true ? __vite__mapDeps([2,1,3]) : void 0, import.meta.url),
+    component: () => __vitePreload(() => import("./DashboardPage-R8n_ItfV.js"), true ? __vite__mapDeps([2,1,3]) : void 0, import.meta.url),
     props: { initialView: "qa" }
   },
   {
     path: "/weekly",
     name: "weekly",
-    component: () => __vitePreload(() => import("./DashboardPage-CwtNg2T5.js"), true ? __vite__mapDeps([2,1,3]) : void 0, import.meta.url),
+    component: () => __vitePreload(() => import("./DashboardPage-R8n_ItfV.js"), true ? __vite__mapDeps([2,1,3]) : void 0, import.meta.url),
     props: { initialView: "weekly" }
   },
   {
     path: "/today",
     name: "today",
-    component: () => __vitePreload(() => import("./DashboardPage-CwtNg2T5.js"), true ? __vite__mapDeps([2,1,3]) : void 0, import.meta.url),
+    component: () => __vitePreload(() => import("./DashboardPage-R8n_ItfV.js"), true ? __vite__mapDeps([2,1,3]) : void 0, import.meta.url),
     props: { initialView: "today" }
   },
   {
     path: "/yesterday",
     name: "yesterday",
-    component: () => __vitePreload(() => import("./DashboardPage-CwtNg2T5.js"), true ? __vite__mapDeps([2,1,3]) : void 0, import.meta.url),
+    component: () => __vitePreload(() => import("./DashboardPage-R8n_ItfV.js"), true ? __vite__mapDeps([2,1,3]) : void 0, import.meta.url),
     props: { initialView: "yesterday" }
   },
   {
     path: "/project/:id",
     name: "project",
-    component: () => __vitePreload(() => import("./ProjectPage-B6qGdrxH.js"), true ? __vite__mapDeps([4,5,1,3]) : void 0, import.meta.url)
+    component: () => __vitePreload(() => import("./ProjectPage-BH9ysF61.js"), true ? __vite__mapDeps([4,5,1,3]) : void 0, import.meta.url)
   },
   {
     path: "/ai",
     name: "ai-terminal",
-    component: () => __vitePreload(() => import("./AITerminalPage-BwfPM4sd.js"), true ? [] : void 0, import.meta.url)
+    component: () => __vitePreload(() => import("./AITerminalPage-XrxNYgJP.js"), true ? [] : void 0, import.meta.url)
   },
   {
     path: "/draft",
     name: "draft-review",
-    component: () => __vitePreload(() => import("./DraftReviewPage-k_K1FC3o.js"), true ? __vite__mapDeps([6,5,1,3]) : void 0, import.meta.url)
+    component: () => __vitePreload(() => import("./DraftReviewPage-DpWzE94X.js"), true ? __vite__mapDeps([6,5,1,3]) : void 0, import.meta.url)
   },
   {
     path: "/sprint",
     name: "sprint",
-    component: () => __vitePreload(() => import("./SprintPage-O8lPJj2D.js"), true ? __vite__mapDeps([7,1]) : void 0, import.meta.url)
+    component: () => __vitePreload(() => import("./SprintPage-C9pg_Tcw.js"), true ? __vite__mapDeps([7,1]) : void 0, import.meta.url)
   },
   {
     path: "/credentials",
     name: "credentials",
-    component: () => __vitePreload(() => import("./CredentialsPage-Cg6bAHhz.js"), true ? [] : void 0, import.meta.url)
+    component: () => __vitePreload(() => import("./CredentialsPage-dYXtesiC.js"), true ? [] : void 0, import.meta.url)
   },
   {
     path: "/settings",
     name: "settings",
-    component: () => __vitePreload(() => import("./SettingsPage-xTaEuPhz.js"), true ? [] : void 0, import.meta.url)
+    component: () => __vitePreload(() => import("./SettingsPage-CkbiMoAS.js"), true ? [] : void 0, import.meta.url)
   }
 ];
 const router = createRouter({
@@ -10131,10 +10134,10 @@ export {
   defineStore as A,
   useJiraStore as B,
   createStaticVNode as C,
-  vModelCheckbox as D,
-  useRoute as E,
+  useRouter as D,
+  vModelCheckbox as E,
   Fragment as F,
-  useRouter as G,
+  useRoute as G,
   onUnmounted as H,
   nextTick as I,
   h as J,
