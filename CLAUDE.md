@@ -2,7 +2,8 @@
 
 QADash คือ Personal QA Sentinel: แอป macOS (Electron + Vue.js) ที่ Flag, จัดลำดับ, และวิเคราะห์งาน QA จาก Jira และไฟล์ `.md` ในโปรเจกต์ Local
 
-> **Scope:** MVP 1.3 เท่านั้น — ห้าม implement feature นอก PRD v1.3 โดยไม่ผ่าน `/pa` ก่อน
+> **Scope:** MVP 1.3 (shipped) + MVP 1.4 (Fast-Follow Epic 9) — ห้าม implement feature นอก approved roadmap โดยไม่ผ่าน `/pa` ก่อน
+> **Freeze Gate:** Epic 9 (US-018–021, US-022 backlog) ถูกล็อกจนกว่า MVP 1.3 จะ ship + QA sign-off ✅
 
 ---
 
