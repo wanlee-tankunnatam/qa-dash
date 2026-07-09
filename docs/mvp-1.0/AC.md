@@ -61,7 +61,7 @@
 ## AC-005: การแสดง Priority Queue (US-008)
 
 > **Precedence rule (บังคับ):** แต่ละ task ถูกจัดเข้า **section แรกสุดที่เข้าเกณฑ์เท่านั้น** ตามลำดับ Blocker/Failed → Overdue → Due Today เพื่อไม่ให้นับซ้ำข้าม section (mutually exclusive)
-> **Data source:** section "Blocker/Failed" ใช้ได้เฉพาะ `LinkedTask` (ต้องมี Jira `priority`/`status`); section "Overdue"/"Due Today" ใช้ `dueDate` ได้ทั้ง `LinkedTask` และ `UntrackedTask` — *(รอ PA ยืนยัน ดู [BA→PA] flag)*
+> **Data source (PA decision — ยืนยันแล้ว):** section "Blocker/Failed" ใช้ได้เฉพาะ `LinkedTask` (ต้องมี Jira `priority`/`status`); section "Overdue"/"Due Today" รวม `dueDate` **ทั้ง** `LinkedTask` และ `UntrackedTask` — เพื่อให้ morning triage เห็นงานเสี่ยงหลุดครบทุกชนิด (สอดคล้องปรัชญา Danger Zone)
 
 | รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
 |---|---|---|
