@@ -209,6 +209,33 @@
 
 ## AC-015: Start My Day แบบ Analysis Report (US-021)
 
+| รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
+|---|---|---|
+| AC-015-01 | ปุ่ม "Start My Day" แสดงผล briefing เดิม + ส่วนเพิ่มเติม (Top Risks / Common Patterns / Suggested Fix Order) | UI: ผลลัพธ์ streaming มีทั้ง 3 section |
+| AC-015-02 | Top Risks = งาน Blocker/Failed/Overdue ที่ untracked สะสม ≥3 วันติดต่อกัน (Danger Zone) | Integration: filter & rank โดย Danger Zone threshold |
+| AC-015-03 | Common Patterns = pattern ที่ระบบจับ (เช่น "Project X: untracked เพิ่ม 3 items/วัน ตลอด 5 วัน") | Integration: analysis จากลำดับ snapshot ทรี 7 วัน |
+| AC-015-04 | Suggested Fix Order = จัดลำดับเพื่อเอาที่เสี่ยงสูงสุดออกก่อน (Blocker/Failed → Overdue → Due Today → Danger Zone project) | Integration: sort order assertion |
+| AC-015-05 | ใช้ข้อมูลระบบ (snapshot, danger zone state) เท่านั้น — **ไม่** fetch ผล test run จริง | Code review: no test execution API call |
+| AC-015-06 | backward compatible กับ US-010 — ผู้ใช้ที่ไม่สนใจ section ใหม่ยังเห็น briefing เดิม | UI: AC-007 compliance |
+
+---
+
+## AC-016: AI Cross-File Requirement Consistency Check (US-022 — Backlog Candidate)
+
+> **Scope:** Post-MVP (Backlog Candidate) — รอ PM approve ก่อนเข้า roadmap
+> **Philosophy:** ต่อยอด US-018 (gap check ไฟล์เดียว) → US-022 (conflict ข้ามไฟล์) เพื่อจับ systemic requirement issue
+> **Security:** read-only insight + AI จาก main process เท่านั้น (สอดคล้อง AC 3.1, 3.2, 4.1)
+
+| รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
+|---|---|---|
+| AC-016-01 | ปุ่ม "Consistency Check" ระดับโปรเจกต์ (ไม่ใช่ raytask) — เรียก UI modal / sidebar ขอ user confirm scope | UI: ปุ่มขึ้น + dialog ขอ limit |
+| AC-016-02 | Claude รับ context: เลือกไฟล์ `.md` ที่ user ระบุหรือทั้งโปรเจกต์ (with size limit ~50KB total) | Integration: context ส่ง main → AI |
+| AC-016-03 | ผลลัพธ์: รายการ conflict ที่จับได้ โครงสร้าง `{file1, line1, text1, file2, line2, text2, conflictType, explanation}` | Unit: JSON parse + assertion |
+| AC-016-04 | conflictType ตัวอย่าง: "contradiction" (X vs. not-X), "ambiguity" (ซ้ำกำหนด), "sequence" (A ต้องมาก่อน B แต่บอกในลำดับกลับ) | Integration: classification test |
+| AC-016-05 | read-only — ปุ่มเพิ่มเติมคือแค่ Copy (เหมือน US-018/019) ไม่มีปุ่ม Edit/Submit/Jira | UI: buttons assertion |
+| AC-016-06 | AI call ทำจาก main process เท่านั้น (renderer ขอ, main ส่ง request) | Code review: IPC channel check |
+| AC-016-07 | ข้อความ disclaimer: "Consistency check พบ conflict ที่อาจเกิด — verify manually ก่อนใช้" | UI: disclaimer text assertion |
+
 > **Scope:** MVP 1.4 (Epic 9) — ต่อยอด AC-007 (US-010) — Freeze gate เช่นเดียวกับ AC-012
 
 | รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |

@@ -291,3 +291,35 @@
 **Dependencies:**
 - US-018, US-019 — Coverage View (US-020) อ้างผลจาก Test Case draft
 - US-010 — US-021 ต่อยอดจาก Briefing เดิม
+
+---
+
+## Backlog Candidates (ไม่ใช่ MVP 1.3 / 1.4 — รอ PM approve)
+
+> **สถานะ:** ร่างจาก product research (UiPath Test Cloud, user feedback) — **ต้องผ่าน PM ตัดสินว่าจะเข้า future release หรือไม่**
+> ทั้งหมด read-only insightไม่ขัดกฎ NEVER (AC 3.1, 3.2, 4.1)
+
+### US-022 — AI Cross-File Requirement Consistency Check
+**ในฐานะ** QA Engineer,
+**ฉันต้องการ** ให้ Claude ตรวจ requirement ข้ามหลายไฟล์ `.md` แล้วชี้จุดที่**ขัดแย้งกันเอง**,
+**เพื่อที่** ฉันจับ conflict เชิงระบบก่อนเริ่มทดสอบ โดยไม่ต้องไล่เทียบเองทุกไฟล์
+
+**เงื่อนไขการยอมรับ:**
+- ปุ่ม "Consistency Check" ระดับ**โปรเจกต์** (ไม่ใช่ราย task) — ต่อยอด US-018
+- Claude รับ context: รวมเนื้อหา `.md` หลายไฟล์ในโปรเจกต์ (มี limit ขนาดชัดเจน)
+- ผลลัพธ์: รายการคู่ที่ขัดกัน — อ้าง `ไฟล์+บรรทัด` ทั้งสองฝั่ง + คำอธิบาย conflict
+- read-only insight ล้วน — **ไม่**แก้ไฟล์ **ไม่**แตะ Jira
+- AI call จาก main process เท่านั้น
+- **Depends on US-018** (reuse context-gathering pattern)
+
+**Rationale:**
+- US-018 จับ gap ในไฟล์เดียว; US-022 จับ conflict **ข้ามไฟล์** (requirement ที่บอก X vs. not-X ในไฟล์ต่างกัน)
+- value: sentinel ควรจับ systemic issue — conflict เหล่านี้มักซ่อนตัวและทำให้เทสขัดแย้ง
+- ไม่ขัด NEVER (ตรวจเท่านั้น ไม่แก้) + read-only
+
+---
+
+### Icebox: Natural-Language Search over Tasks/Requirements
+> **Idea:** ให้ AI ช่วย NL search task/requirement แทน keyword filter
+> **Status:** Defer post-MVP 1.4 — value marginal (มี keyword+filter อยู่) + latency cost ไม่ชัด
+> **Note:** ถ้า user feedback เรียกร้อง future release ให้ draft เป็น story เต็ม
