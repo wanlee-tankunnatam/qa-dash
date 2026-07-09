@@ -5,6 +5,9 @@
       <RouterView />
     </main>
 
+    <!-- Toast notifications -->
+    <Toast />
+
     <!-- Bottom terminal panel -->
     <Transition name="terminal-slide">
       <div
@@ -62,13 +65,16 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import SideNav from './components/layout/SideNav.vue'
 import AITerminalPanel from './components/ai/AITerminalPanel.vue'
+import Toast from './components/shared/Toast.vue'
 import type { SyncSummary } from '../../shared/constants'
 import { useProjectsStore } from '@renderer/stores/projects'
 import { useTasksStore } from '@renderer/stores/tasks'
+import { useToastStore } from '@renderer/stores/toast'
 
 const route = useRoute()
 const projectsStore = useProjectsStore()
 const tasksStore = useTasksStore()
+const toastStore = useToastStore()
 
 const PAGE_LABELS: Record<string, string> = {
   home: 'หน้าแรก (ตารางงานรายวัน)',
@@ -119,6 +125,8 @@ onMounted(() => {
     if (import.meta.env.DEV) console.log('[App] sync completed', summary)
     await projectsStore.fetchProjects()
     await Promise.all(projectsStore.projects.map((p) => tasksStore.scanProject(p.id)))
+    // AC-009-05: show toast notification after sync completes
+    toastStore.show('Sync completed', 'success', 3000)
   })
   cleanupDangerZone = window.qaApi.onDangerZoneTriggered((projectId: string) => {
     console.log('[App] danger zone triggered for', projectId)
