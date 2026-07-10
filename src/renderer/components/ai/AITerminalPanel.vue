@@ -108,6 +108,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useProjectsStore } from '@renderer/stores/projects'
 import { useTasksStore } from '@renderer/stores/tasks'
 import { useJiraStore } from '@renderer/stores/jira'
+import { useDangerZoneStore } from '@renderer/stores/dangerZone'
 
 interface Message { role: 'user' | 'assistant'; content: string }
 
@@ -119,6 +120,7 @@ const props = defineProps<{
 const projectsStore = useProjectsStore()
 const tasksStore = useTasksStore()
 const jiraStore = useJiraStore()
+const dangerZoneStore = useDangerZoneStore()
 
 const messages = ref<Message[]>([])
 const isStreaming = ref(false)
@@ -163,6 +165,7 @@ async function startMyDay() {
     })),
     jiraTickets: Object.values(jiraStore.tickets),
     date: new Date().toISOString().slice(0, 10),
+    dangerZoneStates: dangerZoneStore.states, // Include danger zone snapshots for Top Risks analysis
   }
 
   try {
