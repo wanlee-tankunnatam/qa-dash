@@ -102,19 +102,11 @@
 
       <!-- Report display -->
       <div v-if="gapCheckStore.report && !gapCheckStore.loading" class="max-w-4xl space-y-6">
-        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-          <div>
-            <h2 class="text-lg font-semibold text-slate-800">Gap Analysis Report</h2>
-            <p class="text-xs text-slate-500 mt-1">
-              Source: {{ gapCheckStore.report.source.type === 'jira' ? 'Jira Ticket' : 'File' }} — {{ gapCheckStore.report.source.value }}
-            </p>
-          </div>
-          <button
-            class="px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-all"
-            @click="saveDraft"
-          >
-            Save as Draft
-          </button>
+        <div class="pb-4 border-b border-slate-100">
+          <h2 class="text-lg font-semibold text-slate-800">Gap Analysis Report</h2>
+          <p class="text-xs text-slate-500 mt-1">
+            Source: {{ gapCheckStore.report.source.type === 'jira' ? 'Jira Ticket' : 'File' }} — {{ gapCheckStore.report.source.value }}
+          </p>
         </div>
 
         <!-- Critical gaps -->
@@ -248,29 +240,6 @@ async function pickFile(): Promise<void> {
     }
   } catch (e) {
     toastStore.show(`Failed to pick file: ${(e as Error).message}`, 'error', 4000)
-  }
-}
-
-async function saveDraft(): Promise<void> {
-  if (!gapCheckStore.report) return
-
-  try {
-    const title = `Gap Check — ${gapCheckStore.report.source.type === 'jira' ? gapCheckStore.report.source.value : 'Uploaded File'}`
-    const draft = {
-      title,
-      content: gapCheckStore.formattedReport,
-      metadata: {
-        type: 'gap-check',
-        source: gapCheckStore.report.source,
-        gapReport: gapCheckStore.report,
-      },
-    }
-
-    await window.qaApi.draftCreate(draft)
-    toastStore.show('Draft saved successfully', 'success', 3000)
-    resetForm()
-  } catch (e) {
-    toastStore.show(`Failed to save draft: ${(e as Error).message}`, 'error', 4000)
   }
 }
 

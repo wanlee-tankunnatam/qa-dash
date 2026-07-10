@@ -146,7 +146,7 @@ ${untrackedByProject || 'ไม่มี'}
 3. CLEAR UNTRACKED: แผนขั้นตอนการเปลี่ยน 3 Untracked Tasks แรกเป็น Jira ticket`
 
     try {
-      await streamClaude(prompt, (chunk) => {
+      await this.aiService.stream(prompt, (chunk) => {
         if (!window.isDestroyed()) {
           window.webContents.send(IpcChannel.STREAM_CHUNK as string, chunk)
         }
@@ -255,7 +255,7 @@ ${untrackedByProject || 'ไม่มี'}
         ambiguities: parsed.ambiguities,
         niceToHaveGaps: parsed.niceToHaveGaps,
         createdAt: new Date().toISOString(),
-        rawPrompt: fullPrompt,
+        rawPrompt: `${systemPrompt}\n\n${userPrompt}`,
         rawResponse: fullResponse,
       }
 
