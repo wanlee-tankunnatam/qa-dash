@@ -160,11 +160,11 @@
 
 | รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
 |---|---|---|
-| AC-012-01 | ปุ่ม "Gap Check with AI" ปรากฏบน TaskRow และหัวไฟล์ `.md` ในหน้า Project | UI: ปุ่ม render บน task/file row |
-| AC-012-02 | Gap Check เรียกผ่าน IPC `ai:gap-check` — AI call ทำจาก main process เท่านั้น | Code review: ไม่มี Anthropic SDK import ใน renderer |
-| AC-012-03 | Prompt รวม context: เนื้อหาไฟล์ `.md` (บรรทัดรอบข้าง ±N), fileRelativePath, project name | Integration: prompt content assertion |
-| AC-012-04 | Response เป็น JSON โครงสร้าง `{ missingAcceptanceCriteria: string[], missingEdgeCases: string[], missingValidationRules: string[] }` | Unit: response parse assertion |
-| AC-012-05 | ผลลัพธ์แสดงแยก 3 หมวดใน UI (Missing AC / Edge Cases / Validation) | UI: 3 sections render จาก response |
+| AC-012-01 | ปุ่ม "Gap Check" ปรากฏบน UntrackedTask row (TaskItem.vue) และ LinkedTask row (LinkedTaskItem.vue) ในหน้า Project | UI: ปุ่ม render บน task row, click navigate ไปยัง /gapcheck |
+| AC-012-02 | Gap Check เรียกผ่าน IPC `ai:gapcheck` — AI call ทำจาก main process (AIService.ts) เท่านั้น | Code review: ไม่มี Anthropic SDK import ใน renderer |
+| AC-012-03 | Prompt รวม source context (Jira ticket key หรือ File name) + requirement text เพื่อให้ AI เข้าใจ context | Integration: prompt มี "Source: Jira Ticket (KEY)" หรือ "Source: Uploaded Markdown File" |
+| AC-012-04 | Response เป็น JSON โครงสร้าง `{ criticalGaps: GapItem[], ambiguities: GapItem[], niceToHaveGaps: GapItem[] }` เมื่อ GapItem = `{ title, description, severity, suggestedFix }` | Unit: response parse assertion |
+| AC-012-05 | ผลลัพธ์แสดงแยก 3 หมวดใน UI (Critical Gaps / Ambiguities / Nice-to-Have Gaps) พร้อม badge color-coded | UI: 3 sections render จาก response (red/amber/emerald badges) |
 | AC-012-06 | Gap Check **ไม่** แก้ไขไฟล์ `.md` | Integration: file content ไม่เปลี่ยนแปลงหลังเรียก |
 | AC-012-07 | Gap Check **ไม่** เรียก Jira API และ **ไม่** เปลี่ยนสถานะ task | Integration: ไม่มี Jira API call ระหว่าง gap check |
 | AC-012-08 | Model ที่ใช้คือ `claude-sonnet-4-6` (constant เดียวกับ AC-007-08) | Unit: constant assertion |

@@ -25,12 +25,24 @@
       </p>
       <p class="text-[10px] text-gray-300 font-mono mt-0.5">{{ task.fileRelativePath }}:{{ task.lineNumber }}</p>
     </div>
+    <div class="flex-shrink-0 flex items-center gap-2">
+      <button
+        class="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded hover:bg-amber-50 font-medium"
+        @click="checkGap"
+        title="Analyze requirement for gaps"
+      >
+        Gap Check
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import type { LinkedTask } from '@shared/types/task'
+
+const router = useRouter()
 
 function stripMd(text: string): string {
   const clean = text
@@ -66,5 +78,10 @@ function openTicket() {
   if (props.ticket?.url) {
     window.qaApi.openExternal(props.ticket.url)
   }
+}
+
+function checkGap() {
+  // AC-012-01: Navigate to Gap Check page with task context
+  router.push('/gapcheck')
 }
 </script>
