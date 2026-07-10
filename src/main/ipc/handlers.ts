@@ -9,6 +9,7 @@ import type { IgnoreStore } from '../services/IgnoreStore.js'
 import type { KeychainService } from '../services/KeychainService.js'
 import type { Scheduler } from '../services/Scheduler.js'
 import type { SprintStatusReader } from '../services/SprintStatusReader.js'
+import type { WorkspaceStore } from '../services/WorkspaceStore.js'
 import type { StartMyDayContext } from '../services/DraftService.js'
 import { getSurroundingLines } from '../utils/markdown.js'
 import { readFile, writeFile } from 'fs/promises'
@@ -23,6 +24,7 @@ export function registerHandlers(
   keychainService: KeychainService,
   scheduler: Scheduler,
   sprintStatusReader: SprintStatusReader,
+  workspaceStore: WorkspaceStore,
   getWindow: () => BrowserWindow
 ): void {
   ipcMain.handle(IpcChannel.PROJECTS_LIST as string, async () => {
@@ -303,4 +305,56 @@ export function registerHandlers(
     })
     return result.canceled ? null : result.filePaths[0]
   })
+
+  // Workspaces
+  ipcMain.handle(IpcChannel.WORKSPACES_LIST as string, async () => {
+    return workspaceStore.getWorkspaces()
+  })
+
+  ipcMain.handle(
+    IpcChannel.WORKSPACES_CREATE as string,
+    async (_, name: string, description?: string) => {
+      return workspaceStore.createWorkspace(name, description)
+    }
+  )
+
+  ipcMain.handle(
+    IpcChannel.WORKSPACES_UPDATE as string,
+    async (_, id: string, name: string, description?: string) => {
+      workspaceStore.updateWorkspace(id, name, description)
+    }
+  )
+
+  ipcMain.handle(IpcChannel.WORKSPACES_DELETE as string, async (_, id: string) => {
+    workspaceStore.deleteWorkspace(id)
+  })
+
+  ipcMain.handle(IpcChannel.WORKSPACES_REORDER as string, async (_, orderedIds: string[]) => {
+    workspaceStore.reorderWorkspaces(orderedIds)
+  })
+
+  ipcMain.handle(
+    IpcChannel.WORKSPACES_ADD_PROJECT as string,
+    async (_, workspaceId: string, projectId: string) => {
+      workspaceStore.addProjectToWorkspace(workspaceId, projectId)
+    }
+  )
+
+  ipcMain.handle(
+    IpcChannel.WORKSPACES_REMOVE_PROJECT as string,
+    async (_, workspaceId: string, projectId: string) => {
+      workspaceStore.removeProjectFromWorkspace(workspaceId, projectId)
+    }
+  )
+
+  ipcMain.handle(IpcChannel.WORKSPACES_PREFERENCE_GET as string, async () => {
+    return workspaceStore.getWorkspacePreference()
+  })
+
+  ipcMain.handle(
+    IpcChannel.WORKSPACES_PREFERENCE_SET as string,
+    async (_, workspaceId: string) => {
+      workspaceStore.setWorkspacePreference(workspaceId)
+    }
+  )
 }

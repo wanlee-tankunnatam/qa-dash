@@ -70,11 +70,13 @@ import type { SyncSummary } from '../../shared/constants'
 import { useProjectsStore } from '@renderer/stores/projects'
 import { useTasksStore } from '@renderer/stores/tasks'
 import { useToastStore } from '@renderer/stores/toast'
+import { useWorkspacesStore } from '@renderer/stores/workspaces'
 
 const route = useRoute()
 const projectsStore = useProjectsStore()
 const tasksStore = useTasksStore()
 const toastStore = useToastStore()
+const workspacesStore = useWorkspacesStore()
 
 const PAGE_LABELS: Record<string, string> = {
   home: 'หน้าแรก (ตารางงานรายวัน)',
@@ -119,7 +121,15 @@ function startResize(e: MouseEvent) {
 let cleanupSync: (() => void) | null = null
 let cleanupDangerZone: (() => void) | null = null
 
-onMounted(() => {
+onMounted(async () => {
+  // Initialize workspaces
+  try {
+    await workspacesStore.fetchWorkspaces()
+    await workspacesStore.fetchCurrentWorkspacePreference()
+  } catch (e) {
+    console.error('[App] Failed to load workspaces:', e)
+  }
+
   cleanupSync = window.qaApi.onSyncCompleted(async (summary: SyncSummary) => {
     // AC-009-03: sync เสร็จ (รวม auto-sync 09:00) → refresh stores ให้ทุกหน้าที่อ่าน store re-render อัตโนมัติ
     if (import.meta.env.DEV) console.log('[App] sync completed', summary)

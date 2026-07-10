@@ -9,6 +9,7 @@ import type { DraftResult } from '../shared/types/draft.js'
 import type { SyncSummary } from '../main/services/Scheduler.js'
 import type { StartMyDayContext } from '../main/services/DraftService.js'
 import type { SprintStatusResult } from '../shared/types/sprint.js'
+import type { Workspace } from '../shared/types/workspace.js'
 
 // qaApi — typed interface ที่ renderer เข้าถึงได้ผ่าน window.qaApi
 const qaApi = {
@@ -138,6 +139,34 @@ const qaApi = {
 
   getCredentialSecret: (id: string): Promise<string | null> =>
     ipcRenderer.invoke(IpcChannel.CREDENTIALS_GET_SECRET as string, id),
+
+  // Workspaces
+  listWorkspaces: (): Promise<Workspace[]> =>
+    ipcRenderer.invoke(IpcChannel.WORKSPACES_LIST as string),
+
+  createWorkspace: (name: string, description?: string): Promise<Workspace> =>
+    ipcRenderer.invoke(IpcChannel.WORKSPACES_CREATE as string, name, description),
+
+  updateWorkspace: (id: string, name: string, description?: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.WORKSPACES_UPDATE as string, id, name, description),
+
+  deleteWorkspace: (id: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.WORKSPACES_DELETE as string, id),
+
+  reorderWorkspaces: (orderedIds: string[]): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.WORKSPACES_REORDER as string, orderedIds),
+
+  addProjectToWorkspace: (workspaceId: string, projectId: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.WORKSPACES_ADD_PROJECT as string, workspaceId, projectId),
+
+  removeProjectFromWorkspace: (workspaceId: string, projectId: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.WORKSPACES_REMOVE_PROJECT as string, workspaceId, projectId),
+
+  getWorkspacePreference: (): Promise<string | null> =>
+    ipcRenderer.invoke(IpcChannel.WORKSPACES_PREFERENCE_GET as string),
+
+  setWorkspacePreference: (workspaceId: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.WORKSPACES_PREFERENCE_SET as string, workspaceId),
 
   // Shell
   openExternal: (url: string): Promise<void> =>

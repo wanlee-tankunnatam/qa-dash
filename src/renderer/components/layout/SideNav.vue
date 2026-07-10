@@ -13,6 +13,9 @@
       <span class="text-sm font-semibold text-white tracking-tight">QADash</span>
     </div>
 
+    <!-- Workspace selector -->
+    <WorkspaceSelectorDropdown />
+
     <!-- Nav items -->
     <div class="flex-1 px-2 space-y-0.5">
       <RouterLink
@@ -41,6 +44,7 @@
 <script setup lang="ts">
 import { h } from 'vue'
 import { useRoute } from 'vue-router'
+import WorkspaceSelectorDropdown from '../workspaces/WorkspaceSelectorDropdown.vue'
 
 const route = useRoute()
 

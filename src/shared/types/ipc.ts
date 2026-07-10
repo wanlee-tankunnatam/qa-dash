@@ -46,6 +46,15 @@ export const enum IpcChannel {
   CREDENTIALS_GET_PASSWORD = 'credentials:get-password',
   CREDENTIALS_GET_TOKEN = 'credentials:get-token',
   CREDENTIALS_GET_SECRET = 'credentials:get-secret',
+  WORKSPACES_LIST = 'workspaces:list',
+  WORKSPACES_CREATE = 'workspaces:create',
+  WORKSPACES_UPDATE = 'workspaces:update',
+  WORKSPACES_DELETE = 'workspaces:delete',
+  WORKSPACES_REORDER = 'workspaces:reorder',
+  WORKSPACES_ADD_PROJECT = 'workspaces:add-project',
+  WORKSPACES_REMOVE_PROJECT = 'workspaces:remove-project',
+  WORKSPACES_PREFERENCE_GET = 'workspaces:preference:get',
+  WORKSPACES_PREFERENCE_SET = 'workspaces:preference:set',
 
   // Main → Renderer (webContents.send) — push events
   SYNC_COMPLETED = 'event:sync:completed',

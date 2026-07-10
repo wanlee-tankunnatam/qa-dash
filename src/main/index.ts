@@ -9,6 +9,7 @@ import { DangerZoneTracker } from './services/DangerZoneTracker.js'
 import { DraftService } from './services/DraftService.js'
 import { Scheduler } from './services/Scheduler.js'
 import { SprintStatusReader } from './services/SprintStatusReader.js'
+import { WorkspaceStore } from './services/WorkspaceStore.js'
 import { registerHandlers } from './ipc/handlers.js'
 
 let mainWindow: BrowserWindow | null = null
@@ -18,6 +19,7 @@ app.whenReady().then(async () => {
   const keychainService = new KeychainService()
   const configStore = new ConfigStore()
   const ignoreStore = new IgnoreStore()
+  const workspaceStore = new WorkspaceStore()
   const repoScanner = new RepoScanner(ignoreStore)
   const jiraClient = new JiraClient(keychainService)
   const dangerZoneTracker = new DangerZoneTracker(configStore)
@@ -47,6 +49,7 @@ app.whenReady().then(async () => {
     keychainService,
     scheduler,
     sprintStatusReader,
+    workspaceStore,
     () => mainWindow!
   )
 
