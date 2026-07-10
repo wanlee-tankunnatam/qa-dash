@@ -107,6 +107,9 @@ const qaApi = {
   ask: (prompt: string, imagePath?: string): Promise<void> =>
     ipcRenderer.invoke(IpcChannel.AI_ASK as string, prompt, imagePath),
 
+  gapCheck: (sourceType: 'jira' | 'file', sourceValue: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.AI_GAPCHECK as string, sourceType, sourceValue),
+
   // Notes (daily freeform notes per date)
   getNote: (date: string): Promise<string> =>
     ipcRenderer.invoke(IpcChannel.NOTES_GET as string, date),
@@ -141,6 +144,9 @@ const qaApi = {
   openFolderDialog: (): Promise<string | null> =>
     ipcRenderer.invoke(IpcChannel.DIALOG_OPEN_FOLDER as string),
 
+  dialogOpenFile: (): Promise<string | null> =>
+    ipcRenderer.invoke(IpcChannel.DIALOG_OPEN_FILE as string),
+
   // Event listeners (Main → Renderer push events)
   onSyncCompleted: (callback: (summary: SyncSummary) => void): (() => void) => {
     const handler = (_: Electron.IpcRendererEvent, summary: SyncSummary) => callback(summary)
@@ -160,8 +166,8 @@ const qaApi = {
     return () => ipcRenderer.removeListener(IpcChannel.STREAM_CHUNK as string, handler)
   },
 
-  onStreamEnd: (callback: () => void): (() => void) => {
-    const handler = () => callback()
+  onStreamEnd: (callback: (data?: unknown) => void): (() => void) => {
+    const handler = (_: Electron.IpcRendererEvent, data?: unknown) => callback(data)
     ipcRenderer.on(IpcChannel.STREAM_END as string, handler)
     return () => ipcRenderer.removeListener(IpcChannel.STREAM_END as string, handler)
   },

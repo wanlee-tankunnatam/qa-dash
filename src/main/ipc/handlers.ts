@@ -210,6 +210,19 @@ export function registerHandlers(
     }
   })
 
+  ipcMain.handle(IpcChannel.AI_GAPCHECK as string, async (_, sourceType: string, sourceValue: string) => {
+    const win = getWindow()
+    if (!sourceType || !sourceValue) {
+      win.webContents.send(IpcChannel.STREAM_ERROR as string, 'Source type and value are required')
+      return
+    }
+    try {
+      await draftService.gapCheck(sourceType as 'jira' | 'file', sourceValue, win)
+    } catch (err) {
+      if (!win.isDestroyed()) win.webContents.send(IpcChannel.STREAM_ERROR as string, (err as Error).message)
+    }
+  })
+
   ipcMain.handle(IpcChannel.NOTES_GET as string, (_event, date: string) => {
     return configStore.getNote(date)
   })
@@ -259,6 +272,21 @@ export function registerHandlers(
     const result = await dialog.showOpenDialog({
       properties: ['openDirectory'],
       title: 'Select Project Folder',
+    })
+    return result.canceled ? null : result.filePaths[0]
+  })
+
+  ipcMain.handle(IpcChannel.DIALOG_OPEN_FILE as string, async () => {
+    const win = getWindow()
+    if (!win.isDestroyed()) win.focus()
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        { name: 'Markdown', extensions: ['md'] },
+        { name: 'Text', extensions: ['txt'] },
+        { name: 'All Files', extensions: ['*'] },
+      ],
+      title: 'Select Requirement File',
     })
     return result.canceled ? null : result.filePaths[0]
   })

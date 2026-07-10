@@ -104,11 +104,19 @@ const IconKey = () =>
     h('path', { 'fill-rule': 'evenodd', d: 'M11.5 1a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM5.5 5.5a6 6 0 1 1 11 2.11l2.7 2.7a.75.75 0 0 1-1.06 1.06L15.44 9.67A6 6 0 0 1 5.5 5.5Zm3.25 5.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5H10v1.25a.75.75 0 0 1-1.5 0V11a.75.75 0 0 1 .75-.75v.5Z', 'clip-rule': 'evenodd' }),
   ])
 
+const IconGapCheck = () =>
+  h('svg', { viewBox: '0 0 16 16', fill: 'currentColor', 'aria-hidden': 'true' }, [
+    h('path', {
+      d: 'M3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2Zm1 0v12h8V2H4Zm2 3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5Zm0 3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5Zm0 3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5Z',
+    }),
+  ])
+
 const navItems = [
   { to: '/', label: 'Home', icon: IconHome },
   { to: '/qa', label: 'Tasks', icon: IconDashboard },
   { to: '/sprint', label: 'Sprint', icon: IconSprint },
   { to: '/ai', label: 'AI Terminal', icon: IconAI },
+  { to: '/gapcheck', label: 'Gap Check', icon: IconGapCheck },
   { to: '/credentials', label: 'Credentials', icon: IconKey },
   { to: '/settings', label: 'Settings', icon: IconSettings },
 ]

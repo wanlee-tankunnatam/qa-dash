@@ -41,6 +41,11 @@ const routes = [
     component: () => import('@renderer/pages/AITerminalPage.vue'),
   },
   {
+    path: '/gapcheck',
+    name: 'gapcheck',
+    component: () => import('@renderer/pages/GapCheckPage.vue'),
+  },
+  {
     path: '/draft',
     name: 'draft-review',
     component: () => import('@renderer/pages/DraftReviewPage.vue'),

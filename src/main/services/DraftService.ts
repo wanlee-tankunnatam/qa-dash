@@ -1,14 +1,15 @@
-import { spawn } from 'child_process'
 import { BrowserWindow } from 'electron'
 import { IpcChannel } from '../../shared/types/ipc.js'
 import type { UntrackedTask, ScanResult } from '../../shared/types/task.js'
 import type { Project } from '../../shared/types/project.js'
 import type { JiraTicket } from '../../shared/types/jira.js'
-import type { TicketDraft, DraftResult } from '../../shared/types/draft.js'
+import type { TicketDraft, DraftResult, GapCheckReport, GapItem } from '../../shared/types/draft.js'
 import type { JiraPriority } from '../../shared/types/jira.js'
 import { randomUUID } from 'crypto'
-
-const CLAUDE_BIN = process.env.CLAUDE_BIN ?? '/Users/ice/.local/bin/claude'
+import { readFile } from 'fs/promises'
+import { AIService } from './AIService.js'
+import { JiraClient } from './JiraClient.js'
+import { ConfigStore } from './ConfigStore.js'
 
 export interface StartMyDayContext {
   date: string
@@ -17,56 +18,34 @@ export interface StartMyDayContext {
   projects: Project[]
 }
 
-function runClaude(prompt: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let out = ''
-    let err = ''
-    const child = spawn(CLAUDE_BIN, ['-p', prompt, '--output-format', 'text'], {
-      env: { ...process.env, ELECTRON_RUN_AS_NODE: '' },
-    })
-    child.stdout.on('data', (d: Buffer) => { out += d.toString() })
-    child.stderr.on('data', (d: Buffer) => { err += d.toString() })
-    child.on('close', (code) => {
-      if (code === 0) resolve(out.trim())
-      else reject(new Error(err.trim() || `claude exited with code ${code}`))
-    })
-    child.on('error', reject)
-  })
-}
-
-function streamClaude(prompt: string, onChunk: (text: string) => void, imagePath?: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const args = ['-p', prompt, '--output-format', 'text']
-    if (imagePath) {
-      const { dirname } = require('path') as typeof import('path')
-      args.push('--add-dir', dirname(imagePath))
-    }
-    const child = spawn(CLAUDE_BIN, args, {
-      env: { ...process.env, ELECTRON_RUN_AS_NODE: '' },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-
-    child.stdout.on('data', (d: Buffer) => { onChunk(d.toString()) })
-    child.on('close', (code) => {
-      if (code === 0) resolve()
-      else reject(new Error(`claude exited with code ${code}`))
-    })
-    child.on('error', reject)
-  })
-}
 
 export class DraftService {
-  constructor() {}
+  private aiService: AIService
+  private jiraClient: JiraClient
+  private configStore: ConfigStore
 
-  async ask(prompt: string, window: BrowserWindow, imagePath?: string): Promise<void> {
-    const fullPrompt = imagePath
-      ? `${prompt}\n\n(Please read and analyze the image at: ${imagePath})`
+  constructor(jiraClient: JiraClient, configStore: ConfigStore) {
+    this.aiService = new AIService()
+    this.jiraClient = jiraClient
+    this.configStore = configStore
+  }
+
+  async ask(prompt: string, window: BrowserWindow, _imagePath?: string): Promise<void> {
+    const fullPrompt = _imagePath
+      ? `${prompt}\n\n(Please analyze the image at: ${_imagePath})`
       : prompt
-    await streamClaude(fullPrompt, (chunk) => {
+
+    try {
+      await this.aiService.stream(fullPrompt, (chunk) => {
+        if (!window.isDestroyed()) {
+          window.webContents.send(IpcChannel.STREAM_CHUNK as string, chunk)
+        }
+      })
+    } catch (err) {
       if (!window.isDestroyed()) {
-        window.webContents.send(IpcChannel.STREAM_CHUNK as string, chunk)
+        window.webContents.send(IpcChannel.STREAM_ERROR as string, (err as Error).message)
       }
-    }, imagePath)
+    }
   }
 
   async draftTicket(
@@ -91,11 +70,11 @@ Please provide a JSON object with these fields: { "summary": string, "descriptio
     let parsed: { summary: string; description: string; priority: string; labels: string[] }
 
     try {
-      rawResponse = await runClaude(rawPrompt)
+      rawResponse = await this.aiService.ask(rawPrompt, systemPrompt)
       parsed = this.parseJson(rawResponse)
     } catch {
       try {
-        rawResponse = await runClaude(rawPrompt + '\n\nตอบ JSON เท่านั้น ไม่มีข้อความอื่น')
+        rawResponse = await this.aiService.ask(rawPrompt + '\n\nตอบ JSON เท่านั้น ไม่มีข้อความอื่น', systemPrompt)
         parsed = this.parseJson(rawResponse)
       } catch (err) {
         throw new Error('DRAFT_FAILED: ' + (err as Error).message)
@@ -179,6 +158,134 @@ ${untrackedByProject || 'ไม่มี'}
       if (!window.isDestroyed()) {
         window.webContents.send(IpcChannel.STREAM_ERROR as string, (err as Error).message)
       }
+    }
+  }
+
+  async gapCheck(
+    sourceType: 'jira' | 'file',
+    sourceValue: string,
+    window: BrowserWindow,
+    projectId?: string
+  ): Promise<void> {
+    let requirementText: string
+
+    try {
+      // Fetch or read requirement text
+      if (sourceType === 'jira') {
+        // Fetch actual Jira ticket data
+        // Use provided projectId or try first project
+        const allProjects = this.configStore.getProjects()
+        const project = projectId
+          ? allProjects.find(p => p.id === projectId)
+          : allProjects[0]
+
+        if (!project) {
+          throw new Error('No Jira project configured. Please set up a project first.')
+        }
+
+        const jiraSettings = this.configStore.getJiraSettings(project.id)
+        if (!jiraSettings) {
+          throw new Error(`Jira settings not configured for project "${project.name}". Please configure Jira in Settings.`)
+        }
+
+        const tickets = await this.jiraClient.getTickets(
+          [sourceValue],
+          jiraSettings.baseUrl,
+          jiraSettings.email
+        )
+
+        if (tickets.length === 0) {
+          throw new Error(`Jira ticket not found: ${sourceValue}`)
+        }
+
+        const ticket = tickets[0]
+        requirementText = `Jira Ticket: ${ticket.key}\nTitle: ${ticket.summary}\n\nDescription:\n${ticket.description || '(no description)'}`
+      } else {
+        // For file, sourceValue is a file path
+        try {
+          requirementText = await readFile(sourceValue, 'utf-8')
+        } catch (err) {
+          throw new Error(`Failed to read file: ${(err as Error).message}`)
+        }
+      }
+
+      if (!requirementText || requirementText.trim().length === 0) {
+        throw new Error('Requirement text is empty')
+      }
+
+      const systemPrompt = `คุณเป็น QA requirements analyst ที่ตรวจสอบคุณภาพของ requirement เพื่อหา gap ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น`
+
+      const userPrompt = `Requirement:\n${requirementText}\n\nPlease analyze and provide a JSON object with this structure:
+{
+  "criticalGaps": [
+    {
+      "title": "string",
+      "description": "string",
+      "severity": "Critical" | "High" | "Medium" | "Low",
+      "suggestedFix": "string"
+    }
+  ],
+  "ambiguities": [...],
+  "niceToHaveGaps": [...]
+}`
+
+      let fullResponse = ''
+
+      await this.aiService.stream(
+        userPrompt,
+        (chunk) => {
+          fullResponse += chunk
+          if (!window.isDestroyed()) {
+            window.webContents.send(IpcChannel.STREAM_CHUNK as string, chunk)
+          }
+        },
+        systemPrompt
+      )
+
+      // Parse the response
+      const parsed = this.parseGapCheckResponse(fullResponse)
+
+      const report: GapCheckReport = {
+        id: randomUUID(),
+        source: {
+          type: sourceType,
+          value: sourceValue,
+        },
+        criticalGaps: parsed.criticalGaps,
+        ambiguities: parsed.ambiguities,
+        niceToHaveGaps: parsed.niceToHaveGaps,
+        createdAt: new Date().toISOString(),
+        rawPrompt: fullPrompt,
+        rawResponse: fullResponse,
+      }
+
+      if (!window.isDestroyed()) {
+        window.webContents.send(IpcChannel.STREAM_END as string, report)
+      }
+    } catch (err) {
+      if (!window.isDestroyed()) {
+        window.webContents.send(IpcChannel.STREAM_ERROR as string, (err as Error).message)
+      }
+    }
+  }
+
+  private parseGapCheckResponse(text: string): {
+    criticalGaps: GapItem[]
+    ambiguities: GapItem[]
+    niceToHaveGaps: GapItem[]
+  } {
+    try {
+      const match = text.match(/\{[\s\S]*\}/)
+      if (!match) throw new Error('no JSON block found in response')
+      const parsed = JSON.parse(match[0])
+
+      return {
+        criticalGaps: parsed.criticalGaps || [],
+        ambiguities: parsed.ambiguities || [],
+        niceToHaveGaps: parsed.niceToHaveGaps || [],
+      }
+    } catch (err) {
+      throw new Error(`Failed to parse AI response: ${(err as Error).message}`)
     }
   }
 }
