@@ -177,6 +177,15 @@
                     @blur="updateWorkspaceInline(ws.id)"
                   />
                   <button
+                    class="text-xs px-2 py-1 rounded transition-colors"
+                    :class="workspacesStore.currentWorkspaceId === ws.id
+                      ? 'bg-purple-100 text-purple-600 font-medium'
+                      : 'text-slate-400 hover:text-purple-500 hover:bg-purple-50'"
+                    @click="setDefaultWorkspace(ws.id)"
+                  >
+                    {{ workspacesStore.currentWorkspaceId === ws.id ? '★ Default' : 'Set Default' }}
+                  </button>
+                  <button
                     class="text-xs text-slate-400 hover:text-blue-500 transition-colors px-2 py-1 rounded hover:bg-blue-50"
                     @click="wsEdit[ws.id] = ws.name"
                   >
@@ -556,6 +565,14 @@ async function deleteWorkspace(id: string) {
 
 function getProjectName(projectId: string): string {
   return projectsStore.getById(projectId)?.name ?? 'Unknown'
+}
+
+async function setDefaultWorkspace(workspaceId: string) {
+  try {
+    await workspacesStore.setCurrentWorkspace(workspaceId)
+  } catch (e) {
+    console.error('Failed to set default workspace:', e)
+  }
 }
 
 async function removeProjectFromWorkspace(workspaceId: string, projectId: string) {
