@@ -21,7 +21,7 @@ app.whenReady().then(async () => {
   const repoScanner = new RepoScanner(ignoreStore)
   const jiraClient = new JiraClient(keychainService)
   const dangerZoneTracker = new DangerZoneTracker(configStore)
-  const draftService = new DraftService(jiraClient, configStore)
+  const draftService = new DraftService(jiraClient, configStore, dangerZoneTracker)
   const sprintStatusReader = new SprintStatusReader()
 
   // 2. สร้าง window
