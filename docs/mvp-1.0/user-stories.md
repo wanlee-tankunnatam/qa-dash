@@ -299,23 +299,19 @@
 > **สถานะ:** ร่างจาก product research (UiPath Test Cloud, user feedback) — **ต้องผ่าน PM ตัดสินว่าจะเข้า future release หรือไม่**
 > ทั้งหมด read-only insightไม่ขัดกฎ NEVER (AC 3.1, 3.2, 4.1)
 
-### US-022 — AI Cross-File Requirement Consistency Check
-**ในฐานะ** QA Engineer,
-**ฉันต้องการ** ให้ Claude ตรวจ requirement ข้ามหลายไฟล์ `.md` แล้วชี้จุดที่**ขัดแย้งกันเอง**,
-**เพื่อที่** ฉันจับ conflict เชิงระบบก่อนเริ่มทดสอบ โดยไม่ต้องไล่เทียบเองทุกไฟล์
+### US-022 — Project Workspace Management (MVP 1.4 — APPROVED)
+**ในฐานะ** QA Engineer ที่มีโปรเจกต์หลายสิบอัน,
+**ฉันต้องการ** จัดกลุ่มโปรเจกต์เข้าช่อง (Workspaces/Collections) และสลับเร็ว,
+**เพื่อที่** ฉันจัดการโปรเจกต์ได้ระเบียบ และเห็นแค่โปรเจกต์ที่เกี่ยวข้องได้
 
 **เงื่อนไขการยอมรับ:**
-- ปุ่ม "Consistency Check" ระดับ**โปรเจกต์** (ไม่ใช่ราย task) — ต่อยอด US-018
-- Claude รับ context: รวมเนื้อหา `.md` หลายไฟล์ในโปรเจกต์ (มี limit ขนาดชัดเจน)
-- ผลลัพธ์: รายการคู่ที่ขัดกัน — อ้าง `ไฟล์+บรรทัด` ทั้งสองฝั่ง + คำอธิบาย conflict
-- read-only insight ล้วน — **ไม่**แก้ไฟล์ **ไม่**แตะ Jira
-- AI call จาก main process เท่านั้น
-- **Depends on US-018** (reuse context-gathering pattern)
-
-**Rationale:**
-- US-018 จับ gap ในไฟล์เดียว; US-022 จับ conflict **ข้ามไฟล์** (requirement ที่บอก X vs. not-X ในไฟล์ต่างกัน)
-- value: sentinel ควรจับ systemic issue — conflict เหล่านี้มักซ่อนตัวและทำให้เทสขัดแย้ง
-- ไม่ขัด NEVER (ตรวจเท่านั้น ไม่แก้) + read-only
+- ✅ Dashboard + Sidebar มี Workspace Selector dropdown
+- ✅ สร้าง/แก้ไข/ลบ Workspace (เฉพาะชื่อ) ใน Settings UI
+- ✅ ลาก-วาง (drag-drop) โปรเจกต์เข้า/ออกจาก Workspace แต่ละอัน
+- ✅ Dashboard filter ตามสาขาที่เลือก (ไม่เลือก = show all)
+- ✅ Default Workspace สำหรับโปรเจกต์ที่ยังไม่ได้จัดกลุ่ม
+- ✅ Workspace preference บันทึก persistent (electron-store)
+- ✅ Workspace data ไม่ส่งไปหา Jira (local scope เท่านั้น)
 
 ---
 

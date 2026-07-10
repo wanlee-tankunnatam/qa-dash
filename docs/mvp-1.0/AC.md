@@ -286,10 +286,10 @@
 
 ---
 
-## AC-016: AI Cross-File Requirement Consistency Check (US-022 — Backlog Candidate)
+## AC-016: AI Cross-File Requirement Consistency Check (Backlog Candidate)
 
 > **Scope:** Post-MVP (Backlog Candidate) — รอ PM approve ก่อนเข้า roadmap
-> **Philosophy:** ต่อยอด US-018 (gap check ไฟล์เดียว) → US-022 (conflict ข้ามไฟล์) เพื่อจับ systemic requirement issue
+> **Philosophy:** ต่อยอด US-018 (gap check ไฟล์เดียว) → cross-file (conflict ข้ามไฟล์) เพื่อจับ systemic requirement issue
 > **Security:** read-only insight + AI จาก main process เท่านั้น (สอดคล้อง AC 3.1, 3.2, 4.1)
 
 | รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
@@ -302,16 +302,26 @@
 | AC-016-06 | AI call ทำจาก main process เท่านั้น (renderer ขอ, main ส่ง request) | Code review: IPC channel check |
 | AC-016-07 | ข้อความ disclaimer: "Consistency check พบ conflict ที่อาจเกิด — verify manually ก่อนใช้" | UI: disclaimer text assertion |
 
-> **Scope:** MVP 1.4 (Epic 9) — ต่อยอด AC-007 (US-010) — Freeze gate เช่นเดียวกับ AC-012
+---
+
+## AC-022: Project Workspace Management (US-022)
+
+> **Scope:** MVP 1.4 (Epic 9) — Feature for organizing many projects into named collections
 
 | รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
 |---|---|---|
-| AC-015-01 | ใช้ปุ่ม "Start My Day" และ IPC `ai:start-my-day` เดิม — ไม่เพิ่ม flow/channel ใหม่ | Code review: reuse channel เดิม |
-| AC-015-02 | Prompt เพิ่มคำสั่งให้สรุป 3 ส่วนใหม่: Top Risks, Common Patterns, Suggested Fix Order | Integration: prompt content assertion |
-| AC-015-03 | Response ยังคงแสดงแบบ streaming (chunks ทีละส่วน) เหมือน AC-007-04 | Integration: onStreamChunk fires หลายครั้ง |
-| AC-015-04 | ส่วนเดิมของ US-010 (Critical ก่อนเที่ยง / Standup / Clear Untracked) ยังแสดงครบ | Integration: backward-compat assertion |
-| AC-015-05 | วิเคราะห์จากข้อมูลที่ระบบสรุปให้เท่านั้น — ไม่มีข้อมูลผลรันเทสจริง | Code review: prompt ไม่อ้าง execution result |
-| AC-015-06 | Model ที่ใช้คือ `claude-sonnet-4-6` | Unit: constant assertion |
+| AC-022-01 | Dashboard + Sidebar แสดง Workspace Selector dropdown ที่ทำงานได้ | UI: dropdown render, click เปลี่ยน workspace, re-filter projects |
+| AC-022-02 | ผู้ใช้ create Workspace ใหม่ใน Settings > Workspaces UI | UI: "Create Workspace" button, text input, save บันทึกใน store |
+| AC-022-03 | ผู้ใช้ rename Workspace ใน Settings (edit name only) | UI: edit input, save เป็น workspace ใหม่ |
+| AC-022-04 | ผู้ใช้ delete Workspace ใน Settings — ต้อง confirm dialog ก่อน | UI: delete button → confirmation → workspace ลบออกจาก store |
+| AC-022-05 | ลาก-วาง (drag-drop) โปรเจกต์เข้า/ออกจาก Workspace ได้ (ใน Workspace management panel หรือ Settings) | UI: project card มี drag handle, drop target, projectId + workspaceId update บน store |
+| AC-022-06 | Workspace data ถูกบันทึกใน electron-store ภายใต้ key `workspaces` | Integration: electron-store มี workspace list พร้อม ID, name, project assignments |
+| AC-022-07 | Dashboard filter โปรเจกต์ตามสาขาที่เลือก ใน Workspace Selector | Integration: filter ไม่ hardcode; reactive ตาม workspaceStore.activeWorkspace |
+| AC-022-08 | Default Workspace สร้างอัตโนมัติบนการเปิดแอปครั้งแรก สำหรับโปรเจกต์ที่ยังไม่จัดกลุ่ม | Integration: Workspace ID "default" + name "All Projects" มีอยู่เสมอ ถ้าไม่มี auto-create |
+| AC-022-09 | Workspace active preference ถูกบันทึกใน electron-store เพื่อ restore ครั้งถัดไป | Integration: sessionStorage/localStorage → electron-store activeWorkspaceId |
+| AC-022-10 | Workspace ไม่ส่ง request ไปหา Jira API ใดๆ | Code review: ไม่มี Jira API call ใน workspace-related handlers |
+| AC-022-11 | Workspace ไม่เปลี่ยนสถานะโปรเจกต์ใน Jira | Integration: Jira ticket status ไม่เปลี่ยนหลังเลือก/สร้าง workspace |
+| AC-022-12 | Workspace Selector Sidebar render ทั้งหน้า Logged In (DashboardPage, ProjectPage, etc.) — ไม่ซ่อน | UI: sidebar dropdown มองเห็นทั้งหมด |
 
 ---
 
