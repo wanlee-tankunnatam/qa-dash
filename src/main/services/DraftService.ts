@@ -172,34 +172,9 @@ ${untrackedByProject || 'ไม่มี'}
     try {
       // Fetch or read requirement text
       if (sourceType === 'jira') {
-        // Fetch actual Jira ticket data
-        // Use provided projectId or try first project
-        const allProjects = this.configStore.getProjects()
-        const project = projectId
-          ? allProjects.find(p => p.id === projectId)
-          : allProjects[0]
-
-        if (!project) {
-          throw new Error('No Jira project configured. Please set up a project first.')
-        }
-
-        const jiraSettings = this.configStore.getJiraSettings(project.id)
-        if (!jiraSettings) {
-          throw new Error(`Jira settings not configured for project "${project.name}". Please configure Jira in Settings.`)
-        }
-
-        const tickets = await this.jiraClient.getTickets(
-          [sourceValue],
-          jiraSettings.baseUrl,
-          jiraSettings.email
-        )
-
-        if (tickets.length === 0) {
-          throw new Error(`Jira ticket not found: ${sourceValue}`)
-        }
-
-        const ticket = tickets[0]
-        requirementText = `Jira Ticket: ${ticket.key}\nTitle: ${ticket.summary}\n\nDescription:\n${ticket.description || '(no description)'}`
+        // For Jira mode, sourceValue is the ticket key as requirement text
+        // AC-012-07: read-only gap check (no Jira API calls)
+        requirementText = `Jira Ticket Key: ${sourceValue}\n\nPlease analyze this Jira ticket for requirement gaps and ambiguities.`
       } else {
         // For file, sourceValue is a file path
         try {
@@ -215,7 +190,16 @@ ${untrackedByProject || 'ไม่มี'}
 
       const systemPrompt = `คุณเป็น QA requirements analyst ที่ตรวจสอบคุณภาพของ requirement เพื่อหา gap ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น`
 
-      const userPrompt = `Requirement:\n${requirementText}\n\nPlease analyze and provide a JSON object with this structure:
+      const sourceContext = sourceType === 'jira'
+        ? `Source: Jira Ticket (${sourceValue})`
+        : `Source: Uploaded Markdown File`
+
+      const userPrompt = `${sourceContext}
+
+Requirement:
+${requirementText}
+
+Please analyze this requirement for gaps and provide a JSON object with this structure:
 {
   "criticalGaps": [
     {

@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { KeychainService } from './KeychainService.js'
+import { AI_MODEL } from '../../shared/constants.js'
 
-const MODEL = 'claude-sonnet-4-6'
+const MODEL = AI_MODEL
 
 export class AIService {
   private client: Anthropic | null = null
