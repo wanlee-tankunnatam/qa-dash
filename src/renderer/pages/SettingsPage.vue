@@ -148,6 +148,146 @@
         </div>
       </section>
 
+      <!-- ── Workspaces ── -->
+      <section class="bg-white rounded-xl border border-slate-200">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-slate-700">Workspaces</h2>
+          <span class="text-xs text-slate-400">{{ workspacesStore.workspaces.length }} workspace{{ workspacesStore.workspaces.length !== 1 ? 's' : '' }}</span>
+        </div>
+
+        <!-- Existing workspaces -->
+        <div v-if="workspacesStore.workspaces.length > 0" class="divide-y divide-slate-50">
+          <div
+            v-for="ws in workspacesStore.sorted"
+            :key="ws.id"
+            class="px-5 py-3 space-y-2"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-md bg-purple-50 flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-purple-400" viewBox="0 0 12 12" fill="currentColor">
+                  <path d="M1 2c0-.55.45-1 1-1h8c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1H2c-.55 0-1-.45-1-1V2zm2 2h6v4H3V4z"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <input
+                    v-model="wsEdit[ws.id]"
+                    type="text"
+                    class="flex-1 text-sm font-medium text-slate-700 bg-transparent border-b border-transparent hover:border-slate-200 focus:border-indigo-400 focus:outline-none px-0 py-0.5"
+                    @blur="updateWorkspaceInline(ws.id)"
+                  />
+                  <button
+                    class="text-xs text-slate-400 hover:text-blue-500 transition-colors px-2 py-1 rounded hover:bg-blue-50"
+                    @click="wsEdit[ws.id] = ws.name"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    class="text-xs text-slate-400 hover:text-red-500 transition-colors px-2 py-1 rounded hover:bg-red-50"
+                    @click="confirmDeleteWorkspace(ws.id)"
+                  >
+                    Delete
+                  </button>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">{{ ws.projectIds.length }} project{{ ws.projectIds.length !== 1 ? 's' : '' }}</p>
+              </div>
+            </div>
+            <!-- Projects in this workspace (drop zone) -->
+            <div
+              class="pl-10 space-y-1 px-2 py-2 rounded border-2 border-dashed transition-colors"
+              :class="dragOverWorkspaceId === ws.id ? 'border-purple-400 bg-purple-50' : 'border-transparent'"
+              @dragover.prevent="dragOverWorkspaceId = ws.id"
+              @dragleave.prevent="dragOverWorkspaceId = null"
+              @drop.prevent="handleDropOnWorkspace($event, ws.id)"
+            >
+              <div
+                v-if="ws.projectIds.length === 0"
+                class="text-xs text-slate-300 italic"
+              >
+                (No projects assigned)
+              </div>
+              <div
+                v-for="projId in ws.projectIds"
+                :key="projId"
+                class="flex items-center gap-2 px-2 py-1 bg-purple-50 rounded border border-purple-100"
+              >
+                <span class="text-xs font-mono text-slate-600 flex-1">{{ getProjectName(projId) }}</span>
+                <button
+                  class="text-slate-300 hover:text-red-400 text-xs"
+                  @click="removeProjectFromWorkspace(ws.id, projId)"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unassigned projects (drag to assign) -->
+        <div class="px-5 py-4 border-t border-slate-100 space-y-2">
+          <p class="text-xs font-medium text-slate-600">Drag projects to assign to workspace:</p>
+          <div
+            v-if="unassignedProjects.length === 0"
+            class="text-xs text-slate-400 italic"
+          >
+            (All projects assigned)
+          </div>
+          <div v-else class="flex flex-wrap gap-2">
+            <div
+              v-for="proj in unassignedProjects"
+              :key="proj.id"
+              draggable="true"
+              class="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded text-xs font-mono text-slate-600 cursor-move hover:bg-slate-200 hover:border-slate-300 transition-colors"
+              @dragstart="startDragProject($event, proj.id)"
+            >
+              {{ proj.name }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Update workspace section to accept drops -->
+        <div
+          class="px-5 py-3 border-t border-slate-100 space-y-2"
+          @dragover.prevent="dragOverWorkspaceId = 'all'"
+          @dragleave.prevent="dragOverWorkspaceId = null"
+          @drop.prevent="handleDropOnWorkspacePool"
+        >
+          <p class="text-xs font-medium text-slate-600">Or drop to unassign:</p>
+          <div
+            class="px-3 py-2 bg-slate-50 border-2 border-dashed transition-colors"
+            :class="dragOverWorkspaceId === 'all' ? 'border-amber-400 bg-amber-50' : 'border-slate-200'"
+          >
+            <span class="text-xs text-slate-400">Drop here to unassign from workspace</span>
+          </div>
+        </div>
+
+        <!-- Create new workspace -->
+        <div class="px-5 py-3 border-t border-slate-100">
+          <div class="flex items-end gap-2">
+            <div class="flex-1">
+              <label class="text-xs text-slate-500 font-medium">New Workspace Name</label>
+              <input
+                v-model="newWorkspaceName"
+                type="text"
+                placeholder="e.g., Sprint 1, Frontend, QA Team"
+                class="w-full rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                @keyup.enter="createNewWorkspace"
+              />
+            </div>
+            <button
+              class="px-3 py-1.5 text-xs font-medium rounded transition-all"
+              :class="newWorkspaceName.trim()
+                ? 'bg-purple-600 text-white hover:bg-purple-700'
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed'"
+              :disabled="!newWorkspaceName.trim()"
+              @click="createNewWorkspace"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- ── Jira Projects ── -->
       <section class="bg-white rounded-xl border border-slate-200">
         <div class="px-5 py-4 border-b border-slate-100">
@@ -280,11 +420,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useProjectsStore } from '@renderer/stores/projects'
 import { useJiraStore } from '@renderer/stores/jira'
+import { useWorkspacesStore } from '@renderer/stores/workspaces'
 
 interface JiraProject { key: string; name: string }
 
 const projectsStore = useProjectsStore()
 const jiraStore = useJiraStore()
+const workspacesStore = useWorkspacesStore()
 
 // ── Projects ──
 const newProjectPath = ref('')
@@ -354,6 +496,110 @@ async function renameProject(id: string, name: string) {
   await window.qaApi.renameProject(id, name.trim())
   await projectsStore.fetchProjects()
 }
+
+// ── Workspaces ──
+const newWorkspaceName = ref('')
+const wsEdit = ref<Record<string, string>>({})
+const dragOverWorkspaceId = ref<string | null>(null)
+let draggedProjectId: string | null = null
+
+const unassignedProjects = computed(() => {
+  const assignedIds = new Set<string>()
+  workspacesStore.workspaces.forEach((ws) => {
+    ws.projectIds.forEach((pid) => assignedIds.add(pid))
+  })
+  return projectsStore.projects.filter((p) => !assignedIds.has(p.id))
+})
+
+async function createNewWorkspace() {
+  const name = newWorkspaceName.value.trim()
+  if (!name) return
+  try {
+    await workspacesStore.createWorkspace(name)
+    newWorkspaceName.value = ''
+  } catch (e) {
+    console.error('Failed to create workspace:', e)
+  }
+}
+
+async function updateWorkspaceInline(id: string) {
+  const name = (wsEdit.value[id] ?? '').trim()
+  if (!name) {
+    const ws = workspacesStore.getById(id)
+    if (ws) wsEdit.value[id] = ws.name
+    return
+  }
+  try {
+    await workspacesStore.updateWorkspace(id, name)
+  } catch (e) {
+    console.error('Failed to update workspace:', e)
+    const ws = workspacesStore.getById(id)
+    if (ws) wsEdit.value[id] = ws.name
+  }
+}
+
+function confirmDeleteWorkspace(id: string) {
+  const ws = workspacesStore.getById(id)
+  if (!ws) return
+  if (confirm(`Delete workspace "${ws.name}"? Projects will not be deleted.`)) {
+    deleteWorkspace(id)
+  }
+}
+
+async function deleteWorkspace(id: string) {
+  try {
+    await workspacesStore.deleteWorkspace(id)
+  } catch (e) {
+    console.error('Failed to delete workspace:', e)
+  }
+}
+
+function getProjectName(projectId: string): string {
+  return projectsStore.getById(projectId)?.name ?? 'Unknown'
+}
+
+async function removeProjectFromWorkspace(workspaceId: string, projectId: string) {
+  try {
+    await workspacesStore.removeProjectFromWorkspace(workspaceId, projectId)
+  } catch (e) {
+    console.error('Failed to remove project from workspace:', e)
+  }
+}
+
+function startDragProject(e: DragEvent, projectId: string) {
+  draggedProjectId = projectId
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', projectId)
+  }
+}
+
+async function handleDropOnWorkspace(e: DragEvent, workspaceId: string) {
+  e.preventDefault()
+  dragOverWorkspaceId.value = null
+  const projectId = draggedProjectId || e.dataTransfer?.getData('text/plain')
+  if (projectId) {
+    try {
+      await workspacesStore.addProjectToWorkspace(workspaceId, projectId)
+    } catch (err) {
+      console.error('Failed to add project to workspace:', err)
+    }
+  }
+  draggedProjectId = null
+}
+
+async function handleDropOnWorkspacePool() {
+  dragOverWorkspaceId.value = null
+  // Drop on unassigned area = remove from workspace (already handled by removal button)
+  draggedProjectId = null
+}
+
+onMounted(() => {
+  // Initialize wsEdit with current workspace names
+  workspacesStore.workspaces.forEach((ws) => {
+    wsEdit.value[ws.id] = ws.name
+  })
+})
 
 // ── Jira Projects ──
 const jiraProjects = ref<JiraProject[]>([])
