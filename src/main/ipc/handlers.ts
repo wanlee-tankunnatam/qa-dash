@@ -308,6 +308,8 @@ export function registerHandlers(
 
   // Workspaces
   ipcMain.handle(IpcChannel.WORKSPACES_LIST as string, async () => {
+    // AC-022-08: Ensure default workspace exists
+    workspaceStore.ensureDefaultWorkspace()
     return workspaceStore.getWorkspaces()
   })
 
