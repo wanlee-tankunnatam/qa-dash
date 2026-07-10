@@ -1,6 +1,6 @@
 <template>
   <div class="fixed bottom-24 right-4 z-50 flex flex-col gap-2 pointer-events-none">
-    <Transition name="toast-slide" tag="div" class="flex flex-col gap-2">
+    <TransitionGroup name="toast-slide" tag="div" class="flex flex-col gap-2">
       <div
         v-for="toast in toastStore.toasts"
         :key="toast.id"
@@ -14,7 +14,7 @@
       >
         {{ toast.message }}
       </div>
-    </Transition>
+    </TransitionGroup>
   </div>
 </template>
 
