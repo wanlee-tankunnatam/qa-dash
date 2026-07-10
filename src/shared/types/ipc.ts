@@ -39,6 +39,7 @@ export const enum IpcChannel {
   JIRA_SPRINT_ACTIVE = 'jira:sprint:active',
   SHELL_OPEN_EXTERNAL = 'shell:open-external',
   AI_GAPCHECK = 'ai:gapcheck',
+  AI_DRAFT_TEST_CASES = 'ai:draft-test-cases',
   CREDENTIALS_LIST = 'credentials:list',
   CREDENTIALS_UPSERT = 'credentials:upsert',
   CREDENTIALS_DELETE = 'credentials:delete',

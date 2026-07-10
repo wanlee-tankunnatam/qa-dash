@@ -3,7 +3,7 @@ import { IpcChannel } from '../../shared/types/ipc.js'
 import type { UntrackedTask, ScanResult } from '../../shared/types/task.js'
 import type { Project } from '../../shared/types/project.js'
 import type { JiraTicket } from '../../shared/types/jira.js'
-import type { TicketDraft, DraftResult, GapCheckReport, GapItem } from '../../shared/types/draft.js'
+import type { TicketDraft, DraftResult, GapCheckReport, GapItem, TestCaseDraft, TestCaseReport } from '../../shared/types/draft.js'
 import type { JiraPriority } from '../../shared/types/jira.js'
 import { randomUUID } from 'crypto'
 import { readFile } from 'fs/promises'
@@ -267,6 +267,100 @@ Please analyze this requirement for gaps and provide a JSON object with this str
         criticalGaps: parsed.criticalGaps || [],
         ambiguities: parsed.ambiguities || [],
         niceToHaveGaps: parsed.niceToHaveGaps || [],
+      }
+    } catch (err) {
+      throw new Error(`Failed to parse AI response: ${(err as Error).message}`)
+    }
+  }
+
+  async draftTestCases(
+    sourceType: 'jira' | 'file',
+    sourceValue: string,
+    window: BrowserWindow
+  ): Promise<void> {
+    let requirementText: string
+
+    try {
+      // Fetch or read requirement text
+      if (sourceType === 'jira') {
+        // For Jira mode, sourceValue is the ticket key
+        requirementText = `Jira Ticket Key: ${sourceValue}\n\nPlease generate test cases for this Jira ticket.`
+      } else {
+        // For file, sourceValue is a file path
+        try {
+          requirementText = await readFile(sourceValue, 'utf-8')
+        } catch (err) {
+          throw new Error(`Failed to read file: ${(err as Error).message}`)
+        }
+      }
+
+      if (!requirementText || requirementText.trim().length === 0) {
+        throw new Error('Requirement text is empty')
+      }
+
+      const systemPrompt = `คุณเป็น QA test engineer ที่ร่าง test cases จากเอกสารข้อมูลประกอบฉัน ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น`
+
+      const sourceContext = sourceType === 'jira'
+        ? `Source: Jira Ticket (${sourceValue})`
+        : `Source: Requirement File`
+
+      const userPrompt = `${sourceContext}
+
+Requirement:
+${requirementText}
+
+Please generate test cases in Given-When-Then format and provide a JSON object with this structure:
+{
+  "testCases": [
+    {
+      "scenario": "Given [precondition] / When [action] / Then [expected result]",
+      "testData": { "key": "value" },
+      "expectedResult": "string",
+      "type": "Boundary" | "E2E" | "Edge" | "Functional"
+    }
+  ]
+}`
+
+      let fullResponse = ''
+
+      const response = await this.aiService.ask(userPrompt, systemPrompt)
+      fullResponse = response
+
+      // Parse the response
+      const parsed = this.parseTestCaseResponse(fullResponse)
+
+      const report: TestCaseReport = {
+        id: randomUUID(),
+        source: {
+          type: sourceType,
+          value: sourceValue,
+        },
+        testCases: parsed.testCases,
+        createdAt: new Date().toISOString(),
+        rawPrompt: `${systemPrompt}\n\n${userPrompt}`,
+        rawResponse: fullResponse,
+      }
+
+      if (!window.isDestroyed()) {
+        window.webContents.send(IpcChannel.STREAM_END as string, report)
+      }
+    } catch (err) {
+      if (!window.isDestroyed()) {
+        window.webContents.send(IpcChannel.STREAM_ERROR as string, (err as Error).message)
+      }
+    }
+  }
+
+  private parseTestCaseResponse(text: string): {
+    testCases: TestCaseDraft[]
+  } {
+    try {
+      const match = text.match(/\{[\s\S]*\}/)
+      if (!match) throw new Error('no JSON block found in response')
+      const parsed = JSON.parse(match[0])
+
+      return {
+        testCases: parsed.testCases || [],
       }
     } catch (err) {
       throw new Error(`Failed to parse AI response: ${(err as Error).message}`)

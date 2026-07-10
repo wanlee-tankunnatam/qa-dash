@@ -175,19 +175,85 @@
 ## AC-013: AI ร่าง Test Case (US-019)
 
 > **Scope:** MVP 1.4 (Epic 9) — Freeze gate เช่นเดียวกับ AC-012
+> **Philosophy:** Non-streaming, read-only draft + copy-out pattern — สอดคล้องกฎ NEVER #1, #3, #4 (ไม่ auto-create Jira, AI จาก main process, ไม่เปลี่ยนสถานะโดยอัตโนมัติ)
 
-| รหัส | เกณฑ์การยอมรับ | วิธีทดสอบ |
-|---|---|---|
-| AC-013-01 | ปุ่ม "Draft Test Cases with AI" ปรากฏบน TaskRow และหัวไฟล์ `.md` | UI: ปุ่ม render |
-| AC-013-02 | เรียกผ่าน IPC `ai:draft-test-cases` — non-streaming, AI call จาก main process เท่านั้น | Code review: main-process only |
-| AC-013-03 | Response เป็น JSON array ของ `TestCaseDraft` — แต่ละเคสมี `scenario`, `testData`, `expectedResult`, `type` | Unit: response parse + shape assertion |
-| AC-013-04 | `type` รับค่าจาก enum: `'Boundary' \| 'E2E' \| 'Edge' \| 'Functional'` | Unit: enum validation |
-| AC-013-05 | ทุก field ของทุกเคสแก้ไขได้ก่อน copy (ไม่ readonly) | UI: editable inputs |
-| AC-013-06 | ปุ่ม "Copy" คัดลอก test cases เป็น Markdown/plain text ไป clipboard | UI: clipboard content ตรง expected |
-| AC-013-07 | **ไม่มีปุ่ม** submit/push ไป Jira หรือ test tool ใดๆ — copy-out เท่านั้น | Code review: grep หา submit/push |
-| AC-013-08 | มีข้อความเตือน "Test case เหล่านี้เป็นเพียงร่าง — ตรวจสอบก่อนใช้งานจริง" ในหน้า review | UI: warning text มองเห็น |
-| AC-013-09 | Test case draft เก็บใน electron-store ภายใต้ source task ID (ไว้ให้ Coverage View อ้าง) | Unit: store key assertion |
-| AC-013-10 | การ Copy **ไม่** เรียก Jira API และ **ไม่** mark task เป็น handled | Integration: ไม่มี side effect หลัง copy |
+### AC-013-01: Input Source — Jira Ticket หรือ .md File
+
+| เกณฑ์ | วิธีทดสอบ |
+|---|---|
+| ปุ่ม "Draft Test Cases with AI" ปรากฏบน UntrackedTask row และ LinkedTask row ในหน้า Project | UI: ปุ่ม render บน TaskItem.vue |
+| ปุ่มเดียวกันปรากฏบนหัวไฟล์ `.md` (file-level) หรือ UI element ที่ชัดเจน | UI: ปุ่ม render ที่ file-level |
+| Click ปุ่ม → navigate ไปยัง Draft Test Cases page (เช่น `/test-cases-draft/:taskId`) | UI: route change |
+
+### AC-013-02: AI Call — Non-Streaming via Main Process
+
+| เกณฑ์ | วิธีทดสอบ |
+|---|---|
+| IPC channel `ai:draft-test-cases` ยิง request จาก renderer → main process | Code review: ไม่มี Anthropic SDK import ใน renderer |
+| Response ไม่ stream — คืนค่า JSON array ทั้งก้อน (ไม่ใช้ `onStreamChunk` events) | Integration: ไม่มี multiple events, single response |
+| AI call (Anthropic SDK) ทำจาก `AIService.ts` (main process) เท่านั้น | Code review: Anthropic SDK ใน main process only |
+| Loading state แสดงระหว่างรอ response (non-blocking UI) | UI: spinner/loader มองเห็น |
+
+### AC-013-03: Prompt รวม Requirement Context
+
+| เกณฑ์ | วิธีทดสอบ |
+|---|---|
+| Prompt รวม: ชื่อไฟล์, source type (Jira key หรือ markdown file), เนื้อหาเต็มของ requirement | Integration: prompt content assertion |
+| สำหรับ LinkedTask: รวม Jira ticket key + summary ของ ticket | Integration: prompt มี "Ticket: PROJ-123" |
+| สำหรับ Untracked: รวม file path + line number + checklist text + surrounding context (±5 บรรทัด) | Integration: prompt มี file excerpt |
+| Prompt ชี้ให้ AI เข้าใจว่า test case ต้อง cover ด้วย scenario, test data, expected result, และ type | Integration: prompt keyword check |
+
+### AC-013-04: Test Case Format — Scenario + Test Data + Expected Result + Type
+
+| เกณฑ์ | วิธีทดสอบ |
+|---|---|
+| Response เป็น JSON array: `TestCaseDraft[]` | Unit: response parse |
+| แต่ละ `TestCaseDraft` มีโครงสร้าง: `{ scenario: string, testData: object, expectedResult: string, type: TestCaseType }` | Unit: shape validation |
+| `scenario`: อธิบาย Given-When-Then (เช่น "Given user logs in with valid credentials / When user clicks dashboard / Then see task list") | Unit: regex check scenario มี when/then keywords |
+| `testData`: object ที่เก็บ input variables (เช่น `{ username: "qa@test.com", password: "test123" }`) | Unit: object shape |
+| `expectedResult`: string ที่เก็บผลที่คาดหวัง (เช่น "Dashboard แสดง 5 tasks ขึ้นไป") | Unit: string assertion |
+| `type` enum: `'Boundary' \| 'E2E' \| 'Edge' \| 'Functional'` — AI เลือกอย่างใดอย่างหนึ่ง | Unit: enum validation |
+
+### AC-013-05: Output Display — List of Test Cases ในหน้า Review
+
+| เกณฑ์ | วิธีทดสอบ |
+|---|---|
+| Test cases แสดงใน modal/page review พร้อม field ที่แยกชัดเจน (Scenario / Test Data / Expected Result / Type) | UI: layout assertion |
+| แต่ละ test case มี card/row อ่านง่ายพร้อม icon ของ type (Boundary/E2E/Edge/Functional) | UI: visual hierarchy |
+| ถ้า response > 5 test cases: มี pagination หรือ scroll | UI: scrollable area |
+
+### AC-013-06: Read-Only Draft — ไม่แก้ Requirement
+
+| เกณฑ์ | วิธีทดสอบ |
+|---|---|
+| ทุก field (`scenario`, `testData`, `expectedResult`, `type`) เป็น editable input **ในหน้า review เท่านั้น** — ผู้ใช้สามารถแก้ไขก่อน copy | UI: input fields ไม่ใช่ readonly |
+| การแก้ไข draft **ไม่** auto-save ไป store — เฉพาะเมื่อ user click "Copy" หรือ "Save" explicit | Integration: no reactive store mutation ระหว่าง edit |
+| **ไม่** update ไฟล์ `.md` ของ source requirement | Integration: file system ไม่เปลี่ยนแปลง |
+| **ไม่** update Jira ticket ใดๆ | Integration: ไม่มี Jira API call |
+
+### AC-013-07: No Jira Writes
+
+| เกณฑ์ | วิธีทดสอบ |
+|---|---|
+| **ไม่มีปุ่ม** "Submit to Jira" หรือ "Push Test Cases" ที่ไหนในแอป | Code review: grep `-r "submit.*jira\|push.*test" src/renderer/` |
+| การ copy draft ไป clipboard ไม่เรียก Jira API ใดๆ | Integration: mock Jira API, assert ไม่มี call |
+| Test case draft ไม่มี side effect ต่อ Jira ticket status หรือ linked items | Integration: ticket state ไม่เปลี่ยน |
+
+### AC-013-08: Model Constant
+
+| เกณฑ์ | วิธีทดสอบ |
+|---|---|
+| Model ที่ใช้ AI call คือ `claude-sonnet-4-6` (constant เดียวกับ AC-007-08) | Unit: assertion ใน AIService.ts `const AI_MODEL = 'claude-sonnet-4-6'` |
+| ถ้า constant เปลี่ยน → ใช้ค่า constant นั้น ไม่ hardcode | Code review: ไม่มี string literal `"claude-sonnet-4-6"` |
+
+### AC-013-09: Error Handling
+
+| เกณฑ์ | วิธีทดสอบ |
+|---|---|
+| ถ้า Anthropic API error (rate limit, auth fail, etc.) → แสดง error banner ที่ readable (ไม่ crash) | Integration: error path + UI assertion |
+| ถ้า response ไม่ใช่ valid JSON หรือไม่มี required field → error message เตือน "Test case format ไม่ถูกต้อง" | Integration: malformed response handling |
+| ถ้า Anthropic key ไม่ตั้งค่า → error "Please configure Anthropic API key ใน Settings ก่อน" | Integration: missing credential path |
+| Retry mechanism ต่อ transient errors (optional, แนะนำ) | Integration: retry count test |
 
 ---
 

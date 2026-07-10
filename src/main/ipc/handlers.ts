@@ -223,6 +223,19 @@ export function registerHandlers(
     }
   })
 
+  ipcMain.handle(IpcChannel.AI_DRAFT_TEST_CASES as string, async (_, sourceType: string, sourceValue: string) => {
+    const win = getWindow()
+    if (!sourceType || !sourceValue) {
+      win.webContents.send(IpcChannel.STREAM_ERROR as string, 'Source type and value are required')
+      return
+    }
+    try {
+      await draftService.draftTestCases(sourceType as 'jira' | 'file', sourceValue, win)
+    } catch (err) {
+      if (!win.isDestroyed()) win.webContents.send(IpcChannel.STREAM_ERROR as string, (err as Error).message)
+    }
+  })
+
   ipcMain.handle(IpcChannel.NOTES_GET as string, (_event, date: string) => {
     return configStore.getNote(date)
   })

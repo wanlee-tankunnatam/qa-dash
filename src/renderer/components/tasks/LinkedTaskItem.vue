@@ -33,6 +33,13 @@
       >
         Gap Check
       </button>
+      <button
+        class="text-xs text-purple-600 hover:text-purple-800 px-2 py-1 rounded hover:bg-purple-50 font-medium"
+        @click="draftTestCases"
+        title="Generate test cases with AI"
+      >
+        Test Cases
+      </button>
     </div>
   </div>
 </template>
@@ -83,5 +90,16 @@ function openTicket() {
 function checkGap() {
   // AC-012-01: Navigate to Gap Check page with task context
   router.push('/gapcheck')
+}
+
+function draftTestCases() {
+  // AC-013-01: Navigate to Test Cases page with task context
+  router.push({
+    name: 'test-cases',
+    query: {
+      source: 'jira',
+      key: props.task.jiraKey
+    }
+  })
 }
 </script>

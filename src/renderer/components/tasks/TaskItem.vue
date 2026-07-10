@@ -19,6 +19,13 @@
         Gap Check
       </button>
       <button
+        class="text-xs text-purple-600 hover:text-purple-800 px-2 py-1 rounded hover:bg-purple-50 font-medium"
+        @click="draftTestCases"
+        title="Generate test cases with AI"
+      >
+        Test Cases
+      </button>
+      <button
         class="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded hover:bg-gray-100"
         @click="emit('ignore', task.id)"
       >
@@ -75,5 +82,16 @@ const localChecked = ref(props.task.isChecked)
 function checkGap() {
   // AC-012-01: Navigate to Gap Check page with task context
   router.push('/gapcheck')
+}
+
+function draftTestCases() {
+  // AC-013-01: Navigate to Test Cases page with task context
+  router.push({
+    name: 'test-cases',
+    query: {
+      source: 'file',
+      path: props.task.fileRelativePath
+    }
+  })
 }
 </script>

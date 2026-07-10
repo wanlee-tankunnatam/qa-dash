@@ -11,10 +11,10 @@
 
 ## 🔴 รอดำเนินการ
 
-<!-- roles เพิ่ม flags ที่นี่ -->
+- [ ] [BA→QA-LEAD] US-019 AC-013: 9 criteria finalized (input source / non-streaming AI / prompt context / test case format / UI display / read-only / no Jira writes / model constant / error handling) — ready for QA audit
 
 ---
 
 ## ✅ เสร็จแล้ว (session นี้)
 
-<!-- ย้าย flags ที่ทำเสร็จมาที่นี่ก่อนลบ -->
+- [x] [PA→BA] US-019: Write BA scope review + clarify AC-013 edge cases (Non-streaming AI draft, Copy-out pattern, AC-013-01 thru AC-013-09)

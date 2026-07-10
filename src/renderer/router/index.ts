@@ -46,6 +46,11 @@ const routes = [
     component: () => import('@renderer/pages/GapCheckPage.vue'),
   },
   {
+    path: '/test-cases',
+    name: 'test-cases',
+    component: () => import('@renderer/pages/DraftTestCasesPage.vue'),
+  },
+  {
     path: '/draft',
     name: 'draft-review',
     component: () => import('@renderer/pages/DraftReviewPage.vue'),

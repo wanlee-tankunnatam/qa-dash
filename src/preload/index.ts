@@ -110,6 +110,9 @@ const qaApi = {
   gapCheck: (sourceType: 'jira' | 'file', sourceValue: string): Promise<void> =>
     ipcRenderer.invoke(IpcChannel.AI_GAPCHECK as string, sourceType, sourceValue),
 
+  draftTestCases: (sourceType: 'jira' | 'file', sourceValue: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.AI_DRAFT_TEST_CASES as string, sourceType, sourceValue),
+
   // Notes (daily freeform notes per date)
   getNote: (date: string): Promise<string> =>
     ipcRenderer.invoke(IpcChannel.NOTES_GET as string, date),

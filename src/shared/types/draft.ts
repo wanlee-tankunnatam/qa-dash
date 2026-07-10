@@ -38,3 +38,22 @@ export interface GapCheckReport {
   rawPrompt: string
   rawResponse: string
 }
+
+export interface TestCaseDraft {
+  scenario: string // Given-When-Then format
+  testData: Record<string, any>
+  expectedResult: string
+  type: 'Boundary' | 'E2E' | 'Edge' | 'Functional'
+}
+
+export interface TestCaseReport {
+  id: string
+  source: {
+    type: 'jira' | 'file'
+    value: string // ticket key or file path
+  }
+  testCases: TestCaseDraft[]
+  createdAt: string
+  rawPrompt: string
+  rawResponse: string
+}
