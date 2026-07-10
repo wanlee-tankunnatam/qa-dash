@@ -3,6 +3,7 @@ import type { TestCaseReport } from '@shared/types/draft'
 
 interface TestCaseState {
   report: TestCaseReport | null
+  reports: Record<string, TestCaseReport> // key: `${sourceType}:${sourceValue}`
   loading: boolean
   error: string | null
 }
@@ -10,6 +11,7 @@ interface TestCaseState {
 export const useTestCaseStore = defineStore('testcase', {
   state: (): TestCaseState => ({
     report: null,
+    reports: {},
     loading: false,
     error: null,
   }),
@@ -60,6 +62,13 @@ export const useTestCaseStore = defineStore('testcase', {
     setReport(report: TestCaseReport): void {
       this.report = report
       this.loading = false
+      const key = `${report.source.type}:${report.source.value}`
+      this.reports[key] = report
+    },
+
+    hasCoverage(sourceType: 'jira' | 'file', sourceValue: string): boolean {
+      const key = `${sourceType}:${sourceValue}`
+      return key in this.reports && this.reports[key].testCases.length > 0
     },
 
     clearReport(): void {

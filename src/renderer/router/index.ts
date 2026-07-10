@@ -51,6 +51,11 @@ const routes = [
     component: () => import('@renderer/pages/DraftTestCasesPage.vue'),
   },
   {
+    path: '/coverage',
+    name: 'coverage',
+    component: () => import('@renderer/pages/CoverageView.vue'),
+  },
+  {
     path: '/draft',
     name: 'draft-review',
     component: () => import('@renderer/pages/DraftReviewPage.vue'),
