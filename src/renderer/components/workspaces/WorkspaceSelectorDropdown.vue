@@ -40,7 +40,8 @@
 
     <div
       v-if="isOpen"
-      class="absolute left-3 right-3 mt-1 bg-slate-800 border border-slate-700 rounded-md shadow-lg z-50 max-h-48 overflow-y-auto"
+      class="absolute left-3 right-3 mt-1 bg-slate-800 border border-slate-700 rounded-md shadow-lg z-50 overflow-y-auto"
+      style="max-height: 300px"
     >
       <div
         class="divide-y divide-slate-700"
