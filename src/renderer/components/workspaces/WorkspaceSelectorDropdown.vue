@@ -40,8 +40,8 @@
 
     <div
       v-if="isOpen"
-      class="absolute left-3 right-3 mt-1 bg-slate-800 border border-slate-700 rounded-md shadow-lg z-50 overflow-y-auto"
-      style="max-height: 300px"
+      class="absolute left-3 mt-1 bg-slate-800 border border-slate-700 rounded-md shadow-lg z-50 overflow-y-auto"
+      style="max-width: 200px; max-height: 300px"
     >
       <div
         class="divide-y divide-slate-700"
@@ -62,11 +62,11 @@
         >
           <button
             @click="selectWorkspace(ws.id)"
-            class="flex-1 text-left text-sm text-slate-200 hover:text-white"
+            class="flex-1 text-left text-sm text-slate-200 hover:text-white truncate min-w-0"
             :class="{ 'text-white font-medium': currentWorkspaceId === ws.id }"
           >
-            {{ ws.name }}
-            <span class="text-xs text-slate-400 ml-1">({{ ws.projectIds.length }})</span>
+            <span class="truncate">{{ ws.name }}</span>
+            <span class="text-xs text-slate-400 ml-1 flex-shrink-0">({{ ws.projectIds.length }})</span>
           </button>
           <button
             @click="editWorkspace(ws)"
