@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Project, ProjectConfig } from '@shared/types/project'
+import { useWorkspacesStore } from './workspaces'
 
 interface ProjectsState {
   projects: Project[]
@@ -17,6 +18,18 @@ export const useProjectsStore = defineStore('projects', {
   getters: {
     getById: (state) => (id: string): Project | undefined =>
       state.projects.find((p) => p.id === id),
+
+    filtered: (state) => (): Project[] => {
+      const workspacesStore = useWorkspacesStore()
+      if (!workspacesStore.currentWorkspaceId) {
+        return state.projects
+      }
+      const currentWorkspace = workspacesStore.current
+      if (!currentWorkspace) {
+        return state.projects
+      }
+      return state.projects.filter((p) => currentWorkspace.projectIds.includes(p.id))
+    },
   },
 
   actions: {

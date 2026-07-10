@@ -30,15 +30,15 @@
     <LoadingSpinner v-if="projectsStore.loading" size="lg" class="mx-auto mt-16" />
     <ErrorMessage v-else-if="projectsStore.error" :message="projectsStore.error" :retryable="true" @retry="loadProjects" />
 
-    <div v-else-if="projectsStore.projects.length === 0" class="flex flex-col items-center justify-center mt-20 gap-4">
+    <div v-else-if="filteredProjects.length === 0" class="flex flex-col items-center justify-center mt-20 gap-4">
       <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
         <svg class="w-7 h-7 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
           <path d="M3 3h8v8H3V3Zm0 10h8v8H3v-8Zm10-10h8v8h-8V3Zm0 10h8v8h-8v-8Z"/>
         </svg>
       </div>
       <div class="text-center">
-        <p class="text-sm font-medium text-slate-700">No projects yet</p>
-        <p class="text-xs text-slate-400 mt-1">Go to Settings and add your first project</p>
+        <p class="text-sm font-medium text-slate-700">No projects in this workspace</p>
+        <p class="text-xs text-slate-400 mt-1">Add projects or switch to a different workspace</p>
       </div>
       <RouterLink to="/settings" class="text-xs font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md transition-colors">
         Open Settings →
@@ -50,7 +50,7 @@
       <!-- Project tabs -->
       <div class="flex items-end gap-0 px-6 bg-white border-b border-slate-100 overflow-x-auto">
         <button
-          v-for="project in projectsStore.projects"
+          v-for="project in filteredProjects"
           :key="project.id"
           class="relative flex items-center gap-2 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition-colors border-b-2 -mb-px flex-shrink-0"
           :class="
@@ -475,6 +475,7 @@ const activeProjectId = ref<string>('')
 
 const activeUntracked = computed(() => tasksStore.getUntracked(activeProjectId.value))
 const activeLinked = computed(() => tasksStore.getLinked(activeProjectId.value))
+const filteredProjects = computed(() => projectsStore.filtered())
 
 type QaCategory = 'test-plan' | 'integration-test' | 'e2e' | 'script' | 'manual' | 'other-qa'
 type TaskRole = 'QA' | 'DEV'
@@ -1033,7 +1034,7 @@ async function triggerSync() {
 }
 
 watch(
-  () => projectsStore.projects,
+  () => filteredProjects.value,
   (projects) => {
     if (!activeProjectId.value && projects.length > 0) {
       activeProjectId.value = projects[0].id
