@@ -121,23 +121,31 @@ Please provide a JSON object with these fields: { "summary": string, "descriptio
     const untrackedByProject = context.projects
       .map((p) => {
         const result = context.allScanResults.find((r) => r.projectId === p.id)
-        if (!result) return ''
+        if (!result) return `### ${p.name}\nไม่มี`
         const tasks = result.untracked.filter((t) => !t.isIgnoredToday)
-        if (tasks.length === 0) return ''
+        if (tasks.length === 0) return `### ${p.name}\nไม่มี`
         return `### ${p.name}\n${tasks.map((t) => `- ${t.rawText}`).join('\n')}`
       })
-      .filter(Boolean)
       .join('\n\n')
 
     // Build danger zone context for Top Risks analysis (AC-021-02, 07, 08)
+    // Sort by consecutiveDays DESC (highest risk first) per AC-021-08
     const dangerZoneContext = context.dangerZoneStates
       ? Object.entries(context.dangerZoneStates)
+          .sort((a, b) => (b[1].consecutiveDays || 0) - (a[1].consecutiveDays || 0))
           .map(([projectId, state]) => {
             const project = context.projects.find((p) => p.id === projectId)
             const status = state.isActive ? `🔴 DANGER (${state.consecutiveDays} days)` : '✅ Safe'
             const recentSnapshots = state.snapshots.slice(-7) // last 7 days
-            const untrackedTrend = recentSnapshots.map((s) => s.untrackedCount).join(' → ')
-            return `${project?.name || 'Unknown'}: ${untrackedTrend} — ${status}`
+            const untrackedCounts = recentSnapshots.map((s) => s.untrackedCount)
+            const untrackedTrend = untrackedCounts.join(' → ')
+
+            // Compute trend analysis for Common Patterns (AC-021-11)
+            const deltas = untrackedCounts.slice(1).map((val, i) => val - untrackedCounts[i])
+            const avgDelta = deltas.length > 0 ? (deltas.reduce((a, b) => a + b, 0) / deltas.length).toFixed(1) : '0'
+            const trend = parseFloat(avgDelta as string) > 0 ? 'increasing' : parseFloat(avgDelta as string) < 0 ? 'decreasing' : 'stable'
+
+            return `${project?.name || 'Unknown'}: ${untrackedTrend} (avg: ${avgDelta}/day, ${trend}) — ${status}`
           })
           .join('\n')
       : 'No danger zone data available'
@@ -161,13 +169,25 @@ ${untrackedByProject || 'ไม่มี'}
 ## Danger Zone Status (7-day rolling snapshot)
 ${dangerZoneContext}
 
-กรุณาสรุป (ใหญ่ → เล็ก):
-1. CRITICAL ก่อนเที่ยง: งานอะไรที่ต้องจัดการใน 4 ชั่วโมงข้างหน้า?
-2. STANDUP: 3-5 bullet points สำหรับรายงาน Standup
-3. CLEAR UNTRACKED: แผนขั้นตอนการเปลี่ยน 3 Untracked Tasks แรกเป็น Jira ticket
-4. TOP RISKS: ระบุ 2-3 โปรเจกต์ที่เสี่ยงที่สุด (Blocker + Danger Zone + Overdue รวม) — เรียงลำดับ risk สูงสุด
-5. COMMON PATTERNS: จาก Danger Zone tracking — มีลักษณะซ้ำ (เช่น "Every Monday มี untracked surge") หรือไม่?
-6. SUGGESTED FIX ORDER: ลำดับ 1-5 ของ action items ที่ควรทำเป็นอันดับแรก (Blocker → Overdue → Due Today → Danger Zone → Pattern)`
+กรุณาสรุปตามลำดับต่อไปนี้ (หากข้อมูลว่าง ให้ตอบ "ไม่มี"):
+
+## 1. CRITICAL ก่อนเที่ยง
+งานอะไรที่ต้องจัดการใน 4 ชั่วโมงข้างหน้า?
+
+## 2. STANDUP
+3-5 bullet points สำหรับรายงาน Standup
+
+## 3. CLEAR UNTRACKED
+แผนขั้นตอนการเปลี่ยน 3 Untracked Tasks แรกเป็น Jira ticket
+
+## 4. TOP RISKS
+ระบุ 2-3 โปรเจกต์ที่เสี่ยงที่สุด (Blocker + Danger Zone + Overdue รวม) — เรียงลำดับ risk สูงสุด
+
+## 5. COMMON PATTERNS
+จาก Danger Zone tracking — มีลักษณะซ้ำ (เช่น "Every Monday มี untracked surge") หรือไม่?
+
+## 6. SUGGESTED FIX ORDER
+ลำดับ 1-5 ของ action items ที่ควรทำเป็นอันดับแรก (Blocker → Overdue → Due Today → Danger Zone → Pattern)`
 
     try {
       await this.aiService.stream(prompt, (chunk) => {
