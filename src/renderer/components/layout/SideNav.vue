@@ -115,12 +115,20 @@ const IconGapCheck = () =>
     }),
   ])
 
+const IconCoverage = () =>
+  h('svg', { viewBox: '0 0 16 16', fill: 'currentColor', 'aria-hidden': 'true' }, [
+    h('path', {
+      d: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM7 4h2v5H7V4Zm3 7H6v1h4v-1Z',
+    }),
+  ])
+
 const navItems = [
   { to: '/', label: 'Home', icon: IconHome },
   { to: '/qa', label: 'Tasks', icon: IconDashboard },
   { to: '/sprint', label: 'Sprint', icon: IconSprint },
   { to: '/ai', label: 'AI Terminal', icon: IconAI },
   { to: '/gapcheck', label: 'Gap Check', icon: IconGapCheck },
+  { to: '/coverage', label: 'Test Coverage', icon: IconCoverage },
   { to: '/credentials', label: 'Credentials', icon: IconKey },
   { to: '/settings', label: 'Settings', icon: IconSettings },
 ]

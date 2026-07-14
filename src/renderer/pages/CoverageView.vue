@@ -19,7 +19,7 @@
       <!-- Project coverage grid -->
       <div class="grid grid-cols-3 gap-4 mb-8">
         <div
-          v-for="project in coverageStore.allProjectsCoverage"
+          v-for="project in coverageStore.workspaceFilteredCoverage"
           :key="project.projectId"
           class="border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow cursor-pointer"
           @click="selectProject(project.projectId)"
@@ -58,9 +58,24 @@
                   </p>
                   <p class="text-slate-700 break-words">{{ stripMd(item.summary) }}</p>
                   <p class="text-[10px] text-slate-500 mt-1">{{ item.filePath }}:{{ item.lineNumber }}</p>
+                  <!-- Test case breakdown -->
+                  <div class="flex flex-wrap gap-2 mt-2">
+                    <span v-if="item.testCasesByType.Functional" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">
+                      {{ item.testCasesByType.Functional }}x Functional
+                    </span>
+                    <span v-if="item.testCasesByType.E2E" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                      {{ item.testCasesByType.E2E }}x E2E
+                    </span>
+                    <span v-if="item.testCasesByType.Edge" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">
+                      {{ item.testCasesByType.Edge }}x Edge
+                    </span>
+                    <span v-if="item.testCasesByType.Boundary" class="text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-700">
+                      {{ item.testCasesByType.Boundary }}x Boundary
+                    </span>
+                  </div>
                 </div>
                 <span class="flex-shrink-0 px-2 py-1 rounded-full bg-emerald-200 text-emerald-800 text-xs font-medium">
-                  ✓ Covered
+                  ✓ {{ item.testCaseCount }}
                 </span>
               </div>
             </div>
@@ -87,7 +102,7 @@
                   <p class="text-[10px] text-slate-500 mt-1">{{ item.filePath }}:{{ item.lineNumber }}</p>
                 </div>
                 <span class="flex-shrink-0 px-2 py-1 rounded-full bg-red-200 text-red-800 text-xs font-medium">
-                  ✗ Uncovered
+                  ✗ No Coverage
                 </span>
               </div>
             </div>
@@ -101,8 +116,8 @@
       </div>
 
       <!-- No project selected message -->
-      <div v-if="!selectedCoverage && coverageStore.allProjectsCoverage.length === 0" class="text-center py-12 text-slate-500">
-        <p class="text-sm">No projects yet. Create projects to see coverage.</p>
+      <div v-if="!selectedCoverage && coverageStore.workspaceFilteredCoverage.length === 0" class="text-center py-12 text-slate-500">
+        <p class="text-sm">No projects in this workspace. Create projects or switch workspaces to see coverage.</p>
       </div>
     </div>
   </div>
