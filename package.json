@@ -38,5 +38,33 @@
     "keytar@7.9.0": true,
     "vue-demi@0.14.10": true,
     "fsevents@2.3.3": true
+  },
+  "build": {
+    "appId": "com.qadash.app",
+    "productName": "QADash",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/node_modules/keytar/**"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.developer-tools",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    }
   }
 }
