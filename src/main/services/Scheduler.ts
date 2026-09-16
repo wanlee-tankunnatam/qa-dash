@@ -5,6 +5,7 @@ import type { ConfigStore } from './ConfigStore.js'
 import type { RepoScanner } from './RepoScanner.js'
 import type { JiraClient } from './JiraClient.js'
 import type { DangerZoneTracker } from './DangerZoneTracker.js'
+import type { DailySummaryService } from './DailySummaryService.js'
 import type { ScanResult } from '../../shared/types/task.js'
 import type { DangerZoneState } from '../../shared/types/snapshot.js'
 
@@ -29,6 +30,7 @@ export class Scheduler {
     private repoScanner: RepoScanner,
     private jiraClient: JiraClient,
     private dangerZoneTracker: DangerZoneTracker,
+    private dailySummaryService: DailySummaryService,
     private getWindow: () => BrowserWindow | null
   ) {}
 
@@ -136,6 +138,15 @@ export class Scheduler {
       }
     }
 
+    // 5.5 สรุปงานรายวัน (auto) — วันนี้ + วันทำงานก่อนหน้า (2 คอลัมน์ที่โชว์บนหน้า Home)
+    for (const date of [localYMD(new Date()), previousWorkday(new Date())]) {
+      try {
+        await this.dailySummaryService.generate(date)
+      } catch (err) {
+        errors.push(`[summary:${date}] ${(err as Error).message}`)
+      }
+    }
+
     const summary: SyncSummary = {
       syncedAt,
       projectsScanned: projects.length,
@@ -193,4 +204,21 @@ export class Scheduler {
       win.webContents.send(channel as string, ...args)
     }
   }
+}
+
+// local date เป็น YYYY-MM-DD (ไม่ใช้ toISOString ที่เป็น UTC)
+function localYMD(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+// วันทำงานก่อนหน้า — ข้ามเสาร์/อาทิตย์ (จันทร์ → ศุกร์ที่แล้ว)
+function previousWorkday(from: Date): string {
+  const d = new Date(from)
+  do {
+    d.setDate(d.getDate() - 1)
+  } while (d.getDay() === 0 || d.getDay() === 6)
+  return localYMD(d)
 }

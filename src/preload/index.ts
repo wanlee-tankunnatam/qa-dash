@@ -10,6 +10,7 @@ import type { SyncSummary } from '../main/services/Scheduler.js'
 import type { StartMyDayContext } from '../main/services/DraftService.js'
 import type { SprintStatusResult } from '../shared/types/sprint.js'
 import type { Workspace } from '../shared/types/workspace.js'
+import type { DailySummary } from '../shared/types/summary.js'
 
 // qaApi — typed interface ที่ renderer เข้าถึงได้ผ่าน window.qaApi
 const qaApi = {
@@ -120,6 +121,13 @@ const qaApi = {
 
   setNote: (date: string, text: string): Promise<void> =>
     ipcRenderer.invoke(IpcChannel.NOTES_SET as string, date, text),
+
+  // Daily summary (auto สรุปงานรายวันต่อโปรเจกต์ — git + Jira เรียบเรียงด้วย AI)
+  getDailySummary: (date: string): Promise<DailySummary | null> =>
+    ipcRenderer.invoke(IpcChannel.SUMMARY_DAILY_GET as string, date),
+
+  generateDailySummary: (date: string): Promise<DailySummary> =>
+    ipcRenderer.invoke(IpcChannel.SUMMARY_DAILY_GENERATE as string, date),
 
   // Credentials vault
   listCredentials: (): Promise<ServiceCredential[]> =>

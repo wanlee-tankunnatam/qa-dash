@@ -128,7 +128,35 @@
                   </span>
                   <button v-else class="text-slate-500 hover:text-red-500 text-[10px] flex-shrink-0 transition-colors" @click.stop="confirmDelete = { projectId: p.id, date, idx: i }">✕</button>
                 </div>
-                <span v-if="!tasksOnDate(p.id, date).length && !getEntries(p.id, date).length" class="text-slate-200">—</span>
+                <!-- Auto สรุปงานรายวัน (git + Jira เรียบเรียงด้วย AI) — read-only, แยกจากที่พิมพ์เอง -->
+                <div v-if="isGenerating(date) && !projectSummary(p.id, date)" class="flex items-center gap-1.5 text-[11px] text-slate-400">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-300 animate-pulse" />
+                  กำลังสรุป…
+                </div>
+                <div v-else-if="projectSummary(p.id, date)" class="pt-1.5 mt-1 border-t border-slate-100">
+                  <template v-if="projectSummary(p.id, date)!.bullets.length">
+                    <div v-for="(b, bi) in projectSummary(p.id, date)!.bullets" :key="'b-'+bi" class="flex items-start gap-1.5">
+                      <svg class="w-3 h-3 text-indigo-400 flex-shrink-0 mt-0.5" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                        <path d="M8 1.5 9.3 5.2 13 6.5 9.3 7.8 8 11.5 6.7 7.8 3 6.5 6.7 5.2 8 1.5Z"/>
+                      </svg>
+                      <span class="leading-relaxed text-slate-600">{{ b }}</span>
+                    </div>
+                    <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400">
+                      <span v-if="projectSummary(p.id, date)!.commits.length" :title="projectSummary(p.id, date)!.commits.map(c => c.hash + ' ' + c.subject).join('\n')">
+                        ⎇ {{ projectSummary(p.id, date)!.commits.length }} commits
+                      </span>
+                      <a
+                        v-for="j in projectSummary(p.id, date)!.jira.slice(0, 6)" :key="j.key"
+                        class="font-mono text-indigo-400 hover:text-indigo-600 cursor-pointer"
+                        :title="j.summary + ' (' + j.status + ')'"
+                        @click.prevent="openExternal(j.url)"
+                      >{{ j.key }}</a>
+                      <span v-if="projectSummary(p.id, date)!.jira.length > 6" class="text-slate-400">+{{ projectSummary(p.id, date)!.jira.length - 6 }}</span>
+                    </div>
+                  </template>
+                  <span v-else class="text-[11px] italic text-slate-300">ไม่มีงานในวันนี้</span>
+                </div>
+                <span v-else-if="!tasksOnDate(p.id, date).length && !getEntries(p.id, date).length" class="text-slate-200">—</span>
               </div>
             </td>
           </tr>
@@ -163,7 +191,21 @@
                   </span>
                   <button v-else class="text-slate-500 hover:text-red-500 text-[10px] flex-shrink-0 transition-colors" @click.stop="confirmDelete = { projectId: '__note__', date, idx: i }">✕</button>
                 </div>
-                <span v-if="!getEntries('__note__', date).length" class="text-slate-200">—</span>
+                <!-- error ตอนสร้างสรุป (Jira token หมดอายุ / git พัง) — เห็นชัด ไม่เงียบ -->
+                <div v-if="summaryErrorsOn(date).length" class="pt-1.5 border-t border-amber-100 space-y-0.5">
+                  <div v-for="(err, ei) in summaryErrorsOn(date)" :key="'err-'+ei" class="flex items-start gap-1.5 text-[11px] text-amber-600">
+                    <span class="flex-shrink-0">⚠</span>
+                    <span class="leading-relaxed">{{ err }}</span>
+                  </div>
+                </div>
+                <!-- Jira ที่แตะเมื่อวานแต่จับคู่โปรเจกต์ไม่ได้ (prefix ไม่ตรง repo ไหน) -->
+                <div v-if="unmatchedJiraOn(date).length" class="pt-1.5 border-t border-slate-100 space-y-1">
+                  <div v-for="j in unmatchedJiraOn(date)" :key="j.key" class="flex items-start gap-1.5 text-[11px]">
+                    <a class="font-mono text-indigo-400 hover:text-indigo-600 cursor-pointer flex-shrink-0" @click.prevent="openExternal(j.url)">{{ j.key }}</a>
+                    <span class="text-slate-500">{{ j.summary }}</span>
+                  </div>
+                </div>
+                <span v-if="!getEntries('__note__', date).length && !unmatchedJiraOn(date).length && !summaryErrorsOn(date).length" class="text-slate-200">—</span>
               </div>
             </td>
           </tr>
@@ -221,11 +263,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useProjectsStore } from '@renderer/stores/projects'
 import { useTasksStore } from '@renderer/stores/tasks'
 import LoadingSpinner from '@renderer/components/shared/LoadingSpinner.vue'
 import type { Task } from '@shared/types/task'
+import type { DailySummary, ProjectDailySummary, DailyJiraIssue } from '@shared/types/summary'
 
 const projectsStore = useProjectsStore()
 const tasksStore = useTasksStore()
@@ -233,6 +276,11 @@ const loading = ref(false)
 const isSyncing = ref(false)
 const notes = ref<Record<string, string>>({})
 const offsetDays = ref(0) // 0 = today, -1 = yesterday relative, etc.
+
+// "วันนี้" ต้องเป็น reactive ref — ห้ามให้ computed อ่าน new Date() ตรง ๆ
+// เพราะ computed cache ผลไว้จนกว่า reactive dep จะเปลี่ยน พอข้ามเที่ยงคืนแล้ว
+// offsetDays ไม่ได้เปลี่ยน ค่าเลยค้างเป็นวันเก่า (ต้องกด prev/current ไล่ให้ recompute)
+const todayRef = ref(localYMD(new Date()))
 
 // freeform entries: key = `${projectId}:${date}`, value = string[]
 const viewMode = ref<'daily' | 'week'>('daily')
@@ -269,9 +317,15 @@ function localYMD(d: Date): string {
 }
 
 function dateStr(daysFromToday: number): string {
-  const d = new Date()
+  const d = new Date(todayRef.value + 'T00:00:00')
   d.setDate(d.getDate() + daysFromToday)
   return localYMD(d)
+}
+
+// ตรวจว่าข้ามวันหรือยัง — เรียกจาก timer และตอนแอปถูก focus
+function refreshToday() {
+  const now = localYMD(new Date())
+  if (now !== todayRef.value) todayRef.value = now
 }
 
 const anchorStr = computed(() => dateStr(offsetDays.value))
@@ -405,8 +459,9 @@ async function load() {
 async function triggerSync() {
   isSyncing.value = true
   try {
-    await window.qaApi.triggerSync()
+    await window.qaApi.triggerSync()  // main จะ regenerate summary (วันนี้ + วันทำงานก่อนหน้า) ให้ด้วย
     await load()
+    await loadSummaries(visibleDates.value)
   } finally {
     isSyncing.value = false
   }
@@ -448,10 +503,15 @@ async function addEntry() {
   if (!text || !pid) return
   const date = inputDate.value
   const key = `${pid}:${date}`
+  const edit = editingRef.value
 
-  if (editingRef.value && editingRef.value.projectId === pid && editingRef.value.date === date) {
-    await updateEntry(pid, date, editingRef.value.idx, text)
+  if (edit && edit.projectId === pid && edit.date === date) {
+    // แก้ข้อความอยู่ที่เดิม → update ทับตำแหน่งเดิม
+    await updateEntry(pid, date, edit.idx, text)
   } else {
+    // ถ้ากำลังแก้อยู่แล้วเปลี่ยนโปรเจค/วัน = "ย้าย" → ต้องลบตัวเดิมออกก่อน
+    // ไม่งั้นจะได้ทั้งของเดิมและของใหม่ (รายการซ้ำ)
+    if (edit) await removeEntry(edit.projectId, edit.date, edit.idx)
     const list = [...(entries.value[key] ?? []), text]
     entries.value = { ...entries.value, [key]: list }
     await window.qaApi.setNote(entriesKey(pid, date), JSON.stringify(list))
@@ -498,12 +558,94 @@ async function removeEntry(projectId: string, date: string, idx: number) {
   await window.qaApi.setNote(entriesKey(projectId, date), JSON.stringify(list))
 }
 
+// ── Auto สรุปงานรายวัน (git + Jira เรียบเรียงด้วย AI) ────────────────────────
+// summaries: key = date (YYYY-MM-DD) → DailySummary | null
+const summaries = ref<Record<string, DailySummary | null>>({})
+const genLoading = ref<Set<string>>(new Set())
+
+function projectSummary(projectId: string, date: string): ProjectDailySummary | null {
+  return summaries.value[date]?.projects.find(p => p.projectId === projectId) ?? null
+}
+
+function unmatchedJiraOn(date: string): DailyJiraIssue[] {
+  return summaries.value[date]?.unmatchedJira ?? []
+}
+
+// error ตอนสร้างสรุป (git/Jira พัง) — โชว์ให้เห็น ไม่ปล่อยเงียบ
+function summaryErrorsOn(date: string): string[] {
+  return summaries.value[date]?.errors ?? []
+}
+
+function isGenerating(date: string): boolean {
+  return genLoading.value.has(date)
+}
+
+// อ่านจาก cache อย่างเดียว (ไม่ generate) — ใช้ตอน navigate/refresh หลัง sync
+async function loadSummaries(dates: string[]) {
+  const results = await Promise.all(dates.map(d => window.qaApi.getDailySummary(d)))
+  const patch: Record<string, DailySummary | null> = {}
+  dates.forEach((d, i) => { patch[d] = results[i] })
+  summaries.value = { ...summaries.value, ...patch }
+}
+
+// โหลด cache ก่อน แล้ว generate ให้เองถ้าวันไหนยังไม่มี — ทำงานอัตโนมัติ ไม่ต้องกด
+async function ensureSummaries(dates: string[]) {
+  await loadSummaries(dates)
+  await Promise.all(dates.map(async d => {
+    if (summaries.value[d]) return
+    genLoading.value = new Set(genLoading.value).add(d)
+    try {
+      const s = await window.qaApi.generateDailySummary(d)
+      summaries.value = { ...summaries.value, [d]: s }
+    } catch { /* ไม่มี key / network พลาด — ปล่อยว่างไว้ */ }
+    finally {
+      const next = new Set(genLoading.value); next.delete(d); genLoading.value = next
+    }
+  }))
+}
+
+function openExternal(url: string) {
+  window.qaApi.openExternal(url)
+}
+
 watch([anchorStr, viewMode], () => {
   inputDate.value = anchorStr.value
   loadNotes()
   loadEntries()
+  // เดิมเรียกแค่ loadSummaries (อ่านแคช) → วันที่ยังไม่เคยสร้างจะขึ้น "—" ค้างตลอด
+  // เปลี่ยนเป็น ensureSummaries เพื่อ generate ให้เองเมื่อเปิดดูวันที่ยังไม่มีสรุป
+  ensureSummaries(visibleDates.value)
 })
 watch(() => projectsStore.projects, loadEntries)
 
-onMounted(() => { load(); loadNotes(); loadEntries() })
+let dayTimer: ReturnType<typeof setInterval> | undefined
+let cleanupSync: (() => void) | undefined
+
+onMounted(() => {
+  load(); loadNotes(); loadEntries(); ensureSummaries(visibleDates.value)
+  // เช็คข้ามวันทุกนาที + ตอนกลับมา focus (แอปถูกเปิดค้างข้ามคืนเป็นปกติ — scheduler เด้งหน้าต่าง 09:10)
+  dayTimer = setInterval(refreshToday, 60_000)
+  window.addEventListener('focus', refreshToday)
+  document.addEventListener('visibilitychange', refreshToday)
+  // Auto-sync 09:00 (และ sync จากที่อื่น) regenerate สรุปใน main แล้ว emit event นี้
+  // แต่ summaries เก็บใน state ของหน้านี้เอง → ต้องฟังเองแล้วโหลดใหม่ ไม่งั้นหน้าแรกไม่อัพเดท
+  // (เดิม App.vue ฟัง event แต่ refresh แค่ projects/tasks ไม่ได้แตะ summaries)
+  cleanupSync = window.qaApi.onSyncCompleted(async () => {
+    await load()
+    await loadSummaries(visibleDates.value)
+  })
+})
+
+onUnmounted(() => {
+  if (dayTimer) clearInterval(dayTimer)
+  window.removeEventListener('focus', refreshToday)
+  document.removeEventListener('visibilitychange', refreshToday)
+  cleanupSync?.()
+})
+
+// ข้ามวันแล้ว → โหลดข้อมูลของวันใหม่ และเลื่อน input date ตามถ้ายังชี้วันเก่าอยู่
+watch(todayRef, (newToday, oldToday) => {
+  if (inputDate.value === oldToday) inputDate.value = newToday
+  loadNotes(); loadEntries(); ensureSummaries(visibleDates.value)
+})
 </script>

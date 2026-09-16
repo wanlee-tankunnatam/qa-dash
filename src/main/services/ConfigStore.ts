@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto'
 import { execSync } from 'child_process'
 import { DEFAULT_PROJECT_CONFIG } from '../../shared/constants.js'
 import type { Project, ProjectConfig } from '../../shared/types/project.js'
+import type { DailySummary } from '../../shared/types/summary.js'
 
 interface JiraSettings {
   baseUrl: string
@@ -116,6 +117,14 @@ export class ConfigStore {
   setNote(date: string, text: string): void {
     if (text) this.store.set(`notes.${date}`, text)
     else this.store.delete(`notes.${date}` as never)
+  }
+
+  getSummary(date: string): DailySummary | null {
+    return (this.store.get(`summary.${date}`) as DailySummary | undefined) ?? null
+  }
+
+  setSummary(date: string, summary: DailySummary): void {
+    this.store.set(`summary.${date}`, summary)
   }
 
   setGlobalJira(settings: GlobalJiraSettings): void {

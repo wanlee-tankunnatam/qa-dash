@@ -10,6 +10,8 @@ import { DraftService } from './services/DraftService.js'
 import { Scheduler } from './services/Scheduler.js'
 import { SprintStatusReader } from './services/SprintStatusReader.js'
 import { WorkspaceStore } from './services/WorkspaceStore.js'
+import { ClaudeCliService } from './services/ClaudeCliService.js'
+import { DailySummaryService } from './services/DailySummaryService.js'
 import { registerHandlers } from './ipc/handlers.js'
 
 let mainWindow: BrowserWindow | null = null
@@ -25,6 +27,8 @@ app.whenReady().then(async () => {
   const dangerZoneTracker = new DangerZoneTracker(configStore)
   const draftService = new DraftService(jiraClient, configStore, dangerZoneTracker)
   const sprintStatusReader = new SprintStatusReader()
+  const claudeCli = new ClaudeCliService()
+  const dailySummaryService = new DailySummaryService(configStore, jiraClient, claudeCli)
 
   // 2. สร้าง window
   mainWindow = createWindow()
@@ -35,6 +39,7 @@ app.whenReady().then(async () => {
     repoScanner,
     jiraClient,
     dangerZoneTracker,
+    dailySummaryService,
     () => mainWindow
   )
 
@@ -50,6 +55,7 @@ app.whenReady().then(async () => {
     scheduler,
     sprintStatusReader,
     workspaceStore,
+    dailySummaryService,
     () => mainWindow!
   )
 

@@ -51,7 +51,6 @@
         </svg>
       </button>
       <button
-        v-if="isDev"
         class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white text-xs font-mono flex items-center justify-center shadow-lg transition-all opacity-40 hover:opacity-100"
         title="Toggle DevTools"
         @click="toggleDevTools"
@@ -96,7 +95,6 @@ const currentPageLabel = computed(() => {
   return PAGE_LABELS[name] ?? name ?? 'unknown'
 })
 
-const isDev = import.meta.env.DEV
 const terminalOpen = ref(false)
 const terminalHeight = ref(360)
 

@@ -10,7 +10,7 @@ export class AIService {
   private async getClient(): Promise<Anthropic> {
     if (!this.client) {
       const keychainService = new KeychainService()
-      const apiKey = await keychainService.getAnthropicKey()
+      const apiKey = await keychainService.getCredential('anthropic-key')
       if (!apiKey) {
         throw new Error('Anthropic API key not found in keychain')
       }

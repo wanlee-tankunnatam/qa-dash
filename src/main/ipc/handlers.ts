@@ -10,6 +10,7 @@ import type { KeychainService } from '../services/KeychainService.js'
 import type { Scheduler } from '../services/Scheduler.js'
 import type { SprintStatusReader } from '../services/SprintStatusReader.js'
 import type { WorkspaceStore } from '../services/WorkspaceStore.js'
+import type { DailySummaryService } from '../services/DailySummaryService.js'
 import type { StartMyDayContext } from '../services/DraftService.js'
 import { getSurroundingLines } from '../utils/markdown.js'
 import { readFile, writeFile } from 'fs/promises'
@@ -25,6 +26,7 @@ export function registerHandlers(
   scheduler: Scheduler,
   sprintStatusReader: SprintStatusReader,
   workspaceStore: WorkspaceStore,
+  dailySummaryService: DailySummaryService,
   getWindow: () => BrowserWindow
 ): void {
   ipcMain.handle(IpcChannel.PROJECTS_LIST as string, async () => {
@@ -244,6 +246,14 @@ export function registerHandlers(
 
   ipcMain.handle(IpcChannel.NOTES_SET as string, (_event, date: string, text: string) => {
     configStore.setNote(date, text)
+  })
+
+  ipcMain.handle(IpcChannel.SUMMARY_DAILY_GET as string, (_event, date: string) => {
+    return configStore.getSummary(date)
+  })
+
+  ipcMain.handle(IpcChannel.SUMMARY_DAILY_GENERATE as string, async (_event, date: string) => {
+    return dailySummaryService.generate(date)
   })
 
   ipcMain.handle(IpcChannel.SHELL_OPEN_EXTERNAL as string, async (_, url: string) => {

@@ -15,6 +15,25 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// YYYY-MM-DD → วันถัดไป (สำหรับ JQL ช่วง [date, date+1))
+function nextDay(ymd: string): string {
+  const d = new Date(`${ymd}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + 1)
+  return d.toISOString().slice(0, 10)
+}
+
+export interface WorkedIssue {
+  key: string
+  summary: string
+  status: string
+  url: string
+}
+
+interface WorkedIssueRaw {
+  key: string
+  fields?: { summary?: string; status?: { name?: string } }
+}
+
 export class JiraClient {
   constructor(private keychainService: KeychainService) {}
 
@@ -78,6 +97,50 @@ export class JiraClient {
       url: `${baseUrl}/browse/${key}`,
       fetchedAt,
     }
+  }
+
+  /**
+   * ดึง issue ที่ "ฉันแตะเมื่อวันนั้น" — assignee = currentUser() และ updated อยู่ในช่วงวันนั้น
+   * dateYMD = YYYY-MM-DD (ตี std ตาม timezone ของ Jira user). คืน [] ถ้า query พลาด (ไม่ throw)
+   */
+  async searchWorkedOn(dateYMD: string, baseUrl: string, email: string): Promise<WorkedIssue[]> {
+    if (!email) return []
+    const token = await this.keychainService.getCredential('jira-token')
+    // เชื่อม site+email แล้วแต่ไม่มี token = misconfig จริง — โยน error ให้ผู้ใช้เห็น ไม่เงียบ
+    if (!token) throw new Error('ไม่พบ Jira token ใน Keychain — เชื่อม Jira ใน Settings ก่อน')
+    const authHeader = `Basic ${Buffer.from(`${email}:${token}`).toString('base64')}`
+
+    const next = nextDay(dateYMD)
+    // ครอบ "งานที่ฉันแตะจริง" ไม่ใช่แค่ ticket ที่ assign ให้ฉัน — สำคัญมากสำหรับงาน QA
+    // ที่มักไปเปลี่ยนสถานะ/log งานบน ticket ของคนอื่น:
+    //   1) assignee = ฉัน และถูก update วันนั้น
+    //   2) ฉันเป็นคนเปลี่ยน "สถานะ" วันนั้น (move to In Review / Failed / Done)
+    //   3) ฉัน log งานวันนั้น
+    const jql =
+      `(assignee = currentUser() AND updated >= "${dateYMD}" AND updated < "${next}")` +
+      ` OR (status CHANGED BY currentUser() DURING ("${dateYMD}", "${next}"))` +
+      ` OR (worklogAuthor = currentUser() AND worklogDate >= "${dateYMD}" AND worklogDate < "${next}")` +
+      ` ORDER BY updated DESC`
+    const qs = new URLSearchParams({
+      jql,
+      fields: 'summary,status',
+      maxResults: '50',
+    })
+    const url = `${baseUrl}/rest/api/3/search/jql?${qs.toString()}`
+    const res = await fetch(url, {
+      headers: { Authorization: authHeader, Accept: 'application/json' },
+    })
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      throw new Error(`Jira ${res.status} ${res.statusText}${body ? ` — ${body.slice(0, 200)}` : ''}`)
+    }
+    const data = (await res.json()) as { issues?: WorkedIssueRaw[] }
+    return (data.issues ?? []).map((i) => ({
+      key: i.key,
+      summary: i.fields?.summary ?? '',
+      status: i.fields?.status?.name ?? '',
+      url: `${baseUrl}/browse/${i.key}`,
+    }))
   }
 
   async getActiveSprint(boardId: string, baseUrl: string, email: string): Promise<{ id: number; name: string } | null> {

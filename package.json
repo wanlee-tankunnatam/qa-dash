@@ -4,14 +4,6 @@
   "description": "Personal QA Sentinel — Electron + Vue.js",
   "main": "out/main/index.js",
   "type": "module",
-  "scripts": {
-    "dev": "ELECTRON_RUN_AS_NODE= electron-vite dev",
-    "build": "ELECTRON_RUN_AS_NODE= electron-vite build",
-    "preview": "ELECTRON_RUN_AS_NODE= electron-vite preview",
-    "pack": "npm run build && electron-builder --dir",
-    "dist": "ELECTRON_RUN_AS_NODE= npm run build && electron-builder",
-    "dist:mac": "ELECTRON_RUN_AS_NODE= npm run build && electron-builder --mac"
-  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.52.0",
     "electron-store": "^8.2.0",
@@ -19,52 +11,11 @@
     "keytar": "^7.9.0",
     "node-schedule": "^2.1.1"
   },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.1.0",
-    "@vitejs/plugin-vue": "^5.2.4",
-    "electron": "^35.7.5",
-    "electron-builder": "^25.1.8",
-    "electron-vite": "^3.1.0",
-    "pinia": "^2.3.1",
-    "playwright-core": "^1.61.1",
-    "tailwindcss": "^4.3.1",
-    "typescript": "^5.7.3",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
-  },
   "allowScripts": {
     "electron@35.7.5": true,
     "esbuild@0.25.12": true,
     "keytar@7.9.0": true,
     "vue-demi@0.14.10": true,
     "fsevents@2.3.3": true
-  },
-  "build": {
-    "appId": "com.qadash.app",
-    "productName": "QADash",
-    "directories": {
-      "output": "release",
-      "buildResources": "build"
-    },
-    "files": [
-      "out/**/*",
-      "package.json"
-    ],
-    "asarUnpack": [
-      "**/node_modules/keytar/**"
-    ],
-    "mac": {
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "arm64",
-            "x64"
-          ]
-        }
-      ],
-      "category": "public.app-category.developer-tools",
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
-    }
   }
 }

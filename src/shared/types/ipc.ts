@@ -33,6 +33,8 @@ export const enum IpcChannel {
   DIALOG_OPEN_FILE = 'dialog:open-file',
   NOTES_GET = 'notes:get',
   NOTES_SET = 'notes:set',
+  SUMMARY_DAILY_GET = 'summary:daily:get',
+  SUMMARY_DAILY_GENERATE = 'summary:daily:generate',
   AI_ASK = 'ai:ask',
   DEV_TOOLS_TOGGLE = 'devtools:toggle',
   SPRINT_STATUS_GET = 'sprint:status:get',
